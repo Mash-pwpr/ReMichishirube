@@ -43,6 +43,7 @@
 		uint16_t volt_bat;									//電源電圧監視
 		uint16_t cont_r,cont_l;										//壁制御の比例定数
 		uint16_t Cont_kp[5];									//壁制御の場合分け
+		volatile float omega_G, angle_G,omega_G_rad;
 	#else
 		//----発光LEDポート----
 		extern uint16_t VLED_R;
@@ -57,6 +58,7 @@
 		extern uint16_t base_l,  base_r;
 		extern int16_t dif_l, dif_r;
 		extern uint16_t volt_bat;
+		extern volatile float omega_G, angle_G,omega_G_rad;
 		
 		extern uint16_t cont_r,cont_l;										
 		extern uint16_t Cont_kp[5];

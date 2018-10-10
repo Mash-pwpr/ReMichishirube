@@ -65,38 +65,28 @@ int main(void) {
 	sensor_start();
 	drive_start();
 	ms_wait(100);
-		
-	targ_vel_L = 0.5;
-	targ_vel_R = 0.5;
-		
-		while(time < 600){
-			if(time > 300){
-				targ_vel_L = 1.0;
-				targ_vel_R = 1.0;
-			}
-		}
-		totalR_mm = 0;
-		while(time < 1200)
-			if(time > 900){
-				targ_vel_L = 0.5;
-				targ_vel_R = 0.5;
-				offsetR_mm = 0.5 * targ_vel_R * OFFDT;
-			}
-		while((totalR_mm - offsetR_mm) < 180){
-			if(time > 300){
-				targ_vel_L = 0.5;
-				targ_vel_R = 0.5;
-				offsetR_mm = 0.5 * targ_vel_R * OFFDT;
-			}
-		}	
-		targ_vel_L = 0;
-		targ_vel_R = 0;
-		ms_wait(200);			//ë¨ìxÇ™É[ÉçÇ…é˚ë©Ç∑ÇÈÇ‹Ç≈ë“Ç¬
-		
 			
-*/				
+*/			
+	MF.FLAG.ACTRL = 1;
+	MF.FLAG.VCTRL = 0;
+	MF.FLAG.WCTRL = 0;
+	MF.FLAG.XCTRL = 0;
+	MF.FLAG.CTRL = 0;
+	
+	MF.FLAG.ACCL = 0;
+	MF.FLAG.DECL = 0;
+	
+	targ_angle = 0;
+
 	set_dir(FORWARD);
 	sensor_start();
+	drive_start();
+	
+	//ms_wait(1800);
+	while(1){
+		uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n",angle_G, dif_angle, apid_G);
+		ms_wait(100);
+	}
 	//set_position();
 /*	half_sectionA();
 	half_sectionD();
@@ -107,6 +97,7 @@ int main(void) {
 	half_sectionA();
 	half_sectionD();
 */
+	drive_stop(1);
 	sensor_stop();
 		
 	//a_section();
@@ -126,6 +117,7 @@ int main(void) {
 			//uart_printf("base_r = %3d\r", base_r);
 			ms_wait(500);
 			uart_printf("START\r\n");
+			uart_printf("R1\tL1\tR\tL\r\n");
 			for(i=0;i<2000;i++){
 				uart_printf("%lf, %lf,%lf, %lf\r\n",test_valR1[i],test_valL1[i],test_valR[i],test_valL[i]);
 				ms_wait(1);

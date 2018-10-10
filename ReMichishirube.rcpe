@@ -8,6 +8,25 @@
   <Project Name="ReMichishirube" Type="Application">
     <Files>
       <Path>dbsct.c</Path>
+      <Path>auxiliary.c</Path>
+      <Path>Flash_sma.c</Path>
+      <Path>init.c</Path>
+      <Path>interrupt.c</Path>
+      <Path>port.c</Path>
+      <Path>drive.c</Path>
+      <Path>search.c</Path>
+      <Path>sensor.c</Path>
+      <Path>uart.c</Path>
+      <Path>auxiliary.h</Path>
+      <Path>drive.h</Path>
+      <Path>global.h</Path>
+      <Path>init.h</Path>
+      <Path>pinRX631.h</Path>
+      <Path>port.h</Path>
+      <Path>search.h</Path>
+      <Path>sensor.h</Path>
+      <Path>table.h</Path>
+      <Path>uart.h</Path>
       <Path>ReMichishirube.c</Path>
       <Path>resetprg.c</Path>
       <Path>sbrk.c</Path>
@@ -101,26 +120,6 @@
         <Path>..\..\..\..\Renesas\PDG2_proj\Michishirube\R_PG_IntFuncsExtern.h</Path>
         <Path>..\..\..\..\Renesas\PDG2_proj\Michishirube\R_PG_RPDL_headers.h</Path>
       </Category>
-      <Path>..\..\Downloads\Github\Michishirube2018\auxiliary.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\drive.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\Flash_sma.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\init.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\interrupt.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\port.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\search.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\sensor.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\uart.c</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\auxiliary.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\drive.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\global.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\init.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\macro.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\pinRX631.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\port.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\search.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\sensor.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\table.h</Path>
-      <Path>..\..\Downloads\Github\Michishirube2018\uart.h</Path>
     </Files>
     <DebugOptions>
       <DebugTool>Simulator</DebugTool>
@@ -138,6 +137,7 @@
           <Option>-fpu</Option>
           <Option>-dbl_size=8</Option>
           <Option>-lang=c</Option>
+          <Option>-include=.</Option>
           <Option>-include=..\..\Downloads\Github\Michishirube2018</Option>
           <Option>-include=..\Michishirube</Option>
           <Option>-include=..\..\..\..\Renesas\PDG2_proj\Michishirube</Option>
@@ -213,7 +213,6 @@
           <Path>DefaultBuild\Interrupt_MTU2_TPU.obj</Path>
           <Path>DefaultBuild\Interrupt_CMT.obj</Path>
           <Path>DefaultBuild\auxiliary.obj</Path>
-          <Path>DefaultBuild\drive.obj</Path>
           <Path>DefaultBuild\Flash_sma.obj</Path>
           <Path>DefaultBuild\init.obj</Path>
           <Path>DefaultBuild\interrupt.obj</Path>
@@ -221,8 +220,10 @@
           <Path>DefaultBuild\search.obj</Path>
           <Path>DefaultBuild\sensor.obj</Path>
           <Path>DefaultBuild\uart.obj</Path>
+          <Path>DefaultBuild\drive.obj</Path>
         </LinkOrder>
         <CommonOptions>
+          <IncludePathForC>.</IncludePathForC>
           <IncludePathForC>..\..\Downloads\Github\Michishirube2018</IncludePathForC>
           <IncludePathForC>..\Michishirube</IncludePathForC>
           <IncludePathForC>..\..\..\..\Renesas\PDG2_proj\Michishirube</IncludePathForC>

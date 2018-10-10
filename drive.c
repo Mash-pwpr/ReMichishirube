@@ -303,9 +303,9 @@ void driveAD(float dist, unsigned char rs)
 	drive_start();								//走行開始
 	
 	//----走行----
-	while((totalL_mm - offsetL_mm) < dist){
+	/*while((totalL_mm - offsetL_mm) < dist){
 			offsetL_mm = rs * 0.5 * max_vel_G * off_dt;		//v-tグラフにおける速度減少部の面積　⇒　減少に必要な距離
-	}	
+	}*/	
 	if(rs){
 		MF.FLAG.CTRL = 0;
 		velR0 = velL0 = 0;

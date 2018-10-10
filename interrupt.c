@@ -24,7 +24,7 @@ void Mtu3IcCmDIntFunc(void){		//パルス一周期でやると呼び出される
 	pin_write(P55,0);
 
 	//duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
-	duty_l = KL * (vpid_L + sen_dl + xpid_L);
+	duty_l = KL * (vpid_L + sen_dl + xpid_L - wpid_G - apid_G);
 	
 	if(duty_l < 0){
 		MF.FLAG.L_DIR = 0;					
@@ -84,7 +84,7 @@ void Mtu4IcCmDIntFunc(void){			//右モータ制御関数
 	pin_write(PA6,0);
 
 	//duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
-	duty_r = KR * (vpid_R + sen_dr + xpid_R);
+	duty_r = KR * (vpid_R + sen_dr + xpid_R + wpid_G + apid_G);
 	if(duty_r < 0){
 		MF.FLAG.R_DIR = 0;
 		//duty_oR = duty_r;
@@ -191,20 +191,33 @@ void Cmt1IntFunc(void){
 		pin_write(PE2,0);								
 		pin_write(PE4,0);
 				
+		omega_G = GYRO_read();
+		omega_G_rad = omega_G * KW;
+		angle_G += omega_G * 0.001;
+		
 		break;
 		//----制御計算----
 	case 3:			
 		//====加減速処理====
-		//----減速----
-		if(MF.FLAG.DECL){															
-			if(t_cnt_r > minindex) t_cnt_r--; 
-			if(t_cnt_l > minindex) t_cnt_l--; 
+			//----減速----
+		if(MF.FLAG.VCTRL){
+			if(MF.FLAG.DECL){															
+				if(t_cnt_r > minindex) t_cnt_r--; 
+				if(t_cnt_l > minindex) t_cnt_l--; 
+			}
+			//----加速----
+			else if(MF.FLAG.ACCL){			
+				if(t_cnt_r < maxindex) t_cnt_r++;
+				if(t_cnt_l < maxindex) t_cnt_l++;
+			}
+		}else if(MF.FLAG.WCTRL){
+			if(MF.FLAG.DECL){															
+				if(t_cnt_w < minindex) t_cnt_w--; 
+			}
+			else if(MF.FLAG.ACCL){
+				if(t_cnt_w > maxindex_w) t_cnt_w++; 	
+			}
 		}
-		//----加速----
-		else if(MF.FLAG.ACCL){			
-			if(t_cnt_r < maxindex) t_cnt_r++;
-			if(t_cnt_l < maxindex) t_cnt_l++;
-		}	
 		
 		//壁制御フラグアリの場合
 		if(MF.FLAG.CTRL){
@@ -235,13 +248,7 @@ void Cmt1IntFunc(void){
 void Cmt2IntFunc(){
 
 	time++;
-/*	
-	if(time > 100){
-		targ_vel_L = 0.5;
-		targ_vel_R = 0.5;
-	
-	}
-*/	//エンコーダの値取得
+	//エンコーダの値取得
 	R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
 	R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
 	
@@ -292,7 +299,12 @@ void Cmt2IntFunc(){
 	vel_L = xL;
 	vel_G = xG;
 		
-/*	test_valR[time] = targ_vel[t_cnt_r];
+/*	test_valR[time] = angle_G;
+	test_valL[time] = dif_angle;
+	test_valR1[time] = duty_r;
+	test_valL1[time] = duty_l;
+	
+	test_valR[time] = targ_vel[t_cnt_r];
 	test_valL[time] = targ_vel[t_cnt_l];
 	test_valR1[time] = totalR_mm;
 	test_valL1[time] = totalL_mm;
@@ -329,6 +341,39 @@ void Cmt2IntFunc(){
 		vpid_R = 0;
 		vpid_L = 0;
 	}
+	
+	if(MF.FLAG.WCTRL){
+		//偏差の計算
+		dif_omega = targ_omega[t_cnt_w] - omega_G_rad;
+		//偏差のP制御
+		kwpG = W_KP * dif_omega;				
+		//偏差のD制御
+		kwdG = W_KD * (dif_omega - dif_pre_omega);	
+			
+		//PID制御値を統合
+		wpid_G = (kwpG - kwdG);
+		//現在の偏差をバッファに保存 D制御で使う
+		dif_pre_omega = dif_omega;		
+	}else{
+		wpid_G = 0;
+	}
+	if(MF.FLAG.ACTRL){
+			//偏差の計算
+		dif_angle = targ_angle - angle_G;
+		//偏差のP制御
+		kapG = A_KP * dif_angle;				
+		//偏差のD制御
+		kadG = A_KD * (dif_angle - dif_pre_angle);	
+			
+		//PID制御値を統合
+		apid_G = (kapG - kadG);
+		//現在の偏差をバッファに保存 D制御で使う
+		dif_pre_angle = dif_angle;		
+	}else{
+		apid_G = 0;
+	}
+
+	
 	
 /*	if(MF.FLAG.XCTRL){
 		dif_x_R = (targ_total_mm - totalR_mm);

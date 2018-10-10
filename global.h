@@ -83,18 +83,21 @@
 #define R_BODY 35
 #define MASS 0.1
 #define VOLT_BAT 7.4
-#define KR 1
-#define KL 1.1
+#define KR 1.1
+#define KL 1
 
 //---速度PIDゲイン---
 #define V_KP 1.3
 #define X_KP 1.3
-
 #define V_KD 0.2
 #define X_KD 0.1
-
 #define V_KI 0
 
+#define W_KP 10
+#define W_KD 1
+
+#define A_KP 0.05
+#define A_KD 0
 
 //----タイマ関連----
 #define DEFGRC 22000		//デフォルトのインターバル
@@ -152,8 +155,8 @@
 			unsigned char L_DIR:1;		//予備フラグ(B9)
 			unsigned char VCTRL:1;		//予備フラグ(B10)
 			unsigned char XCTRL:1;		//予備フラグ(B11)
-			unsigned char S5:1;		//予備フラグ(B12)
-			unsigned char S6:1;		//予備フラグ(B13)
+			unsigned char WCTRL:1;		//予備フラグ(B12)
+			unsigned char ACTRL:1;		//予備フラグ(B13)
 			unsigned char S7:1;		//予備フラグ(B14)
 			unsigned char S8:1;		//予備フラグ(B15)
 		}FLAG;

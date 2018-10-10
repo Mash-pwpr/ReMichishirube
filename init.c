@@ -70,10 +70,19 @@ void val_Init(void){
 	totalR_mm = totalL_mm = totalG_mm = 0;
 	dif_pre_vel_R = dif_pre_vel_L = 0;
 	dif_pre_x_R = dif_pre_x_L = 0;
-	t_cnt_r = t_cnt_l = 0;
-	
+	t_cnt_r = t_cnt_l = t_cnt_w = 0;
 	kvpR = kvdR = kviR = kvpL = kvdL = kviL = 0;
 	kxpR = kxdR = kxpL = kxdL = 0;
+	
+	duty_r = duty_l = 0;
+	vpid_R = vpid_L = xpid_R = xpid_L = apid_G = wpid_G = 0;
+	
+	//ジャイロ系
+	omega_G = angle_G;
+	dif_pre_omega = 0;
+	dif_omega = 0;
+	kwpG = kwdG = 0;
+	
 	Cont_kp[0] = CONT0;
 	Cont_kp[1] = CONT1;
 	Cont_kp[2] = CONT2;
@@ -81,10 +90,30 @@ void val_Init(void){
 	Cont_kp[4] = CONT4;
 	
 	cont_r = cont_l = Cont_kp[0];
+	/* 回転速度，計算処理 */
+	accel_omega = 0;
+	max_omega_G = 0;
+	angle_G = 0;
+	dif_angle = 0;
+	kapG = kadG = 0;
+	apid_G  = 0;
+	dif_pre_angle = 0;
 	
+	
+	for(i=0;i<2000;i++){
+		targ_omega[i] = accel_omega * 0.001 * i;
+		
+		if(targ_omega[i] > max_omega_G){
+			targ_vel[i] = max_omega_G;
+			maxindex_w = i;			//最高速度初期化     
+			minindex = MINSPEED_S;		//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
+			break;
+		}
+	}
+	
+	/* 並進速度，計算処理  */
 	accel = 1.0;
 	max_vel_G = 0.35;
-	off_dt = max_vel_G / accel;
 	
 	for(i=0;i<2000;i++){
 		targ_vel[i] = accel * 0.001 * i;
@@ -94,7 +123,6 @@ void val_Init(void){
 			maxindex = i;			//最高速度初期化     
 			minindex = MINSPEED_S;		//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
 			break;
-			
 		}
 	}
 	//----走行系----

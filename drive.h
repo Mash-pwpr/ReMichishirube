@@ -60,15 +60,28 @@
 	volatile float kxpR,kxdR,kxdL,kxpL;
 	volatile float xpid_R,xpid_L;
 	
+	/***角速度のPID計算***/
+	volatile float targ_omega[2000],max_omega_G,accel_omega;
+	volatile float dif_omega;
+	volatile float dif_pre_omega;
+	volatile float kwpG,kwdG;
+	volatile float wpid_G;
 	
-	volatile uint16_t t_cnt_l, t_cnt_r,time, ms_time;		//テーブルカウンタ
-	volatile uint16_t minindex, maxindex;				//最低速度・最大速度
+	/*** 角度のPID計算 ***/
+	volatile float targ_angle;
+	volatile float dif_angle,dif_pre_angle;
+	volatile float kapG,kadG;
+	volatile float apid_G; 
+	
+	
+	volatile uint16_t t_cnt_l, t_cnt_r,t_cnt_w;
+	volatile uint16_t time, ms_time;		//テーブルカウンタ
+	volatile uint16_t minindex, maxindex,maxindex_w;				//最低速度・最大速度
 	volatile uint16_t interval_l, interval_r;			//左右インターバル
 	
 	volatile float duty_r,duty_l,duty_oR,duty_oL;			//Duty比計算と計算オーバー用のバッファ
 	volatile float Kvolt,Kxr;					//加速度計算するための電流定数，距離変換のための定数
 	volatile float accel;					//目標加速度？
-	volatile float off_dt;						//オフセット距離計算用のv-tグラフの下降幅
 	
 	volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000];			//速度ログなどの保存用配列
 	volatile uint16_t test_valR2[1000],test_valL2[1000]; 	//エンコーダ獲得値などの保存用配列
@@ -101,14 +114,28 @@
 	extern volatile float kxpR,kxdR,kxdL,kxpL;	
 	extern volatile float xpid_R,xpid_L;
 	
-	extern volatile uint16_t t_cnt_l, t_cnt_r,time, ms_time;		
-	extern volatile uint16_t minindex, maxindex;		//最低速度・最大速度
+	/***角速度のPID計算***/
+	extern volatile float targ_omega[2000],max_omega_G,accel_omega;
+	extern volatile float dif_omega;
+	extern volatile float dif_pre_omega;
+	extern volatile float kwpG,kwdG;
+	extern volatile float wpid_G;
+	
+	/*** 角度のPID計算 ***/
+	extern volatile float targ_angle;
+	extern volatile float dif_angle,dif_pre_angle;
+	extern volatile float kapG,kadG;
+	extern volatile float apid_G; 
+
+	
+	extern volatile uint16_t t_cnt_l, t_cnt_r,t_cnt_w;
+	extern volatile uint16_t time, ms_time;
+	extern volatile uint16_t minindex, maxindex,maxindex_w;		//最低速度・最大速度
 	extern volatile uint16_t interval_l, interval_r;	//左右インターバル
 	
 	extern volatile float duty_r,duty_l,duty_oR,duty_oL;
 	extern volatile float Kvolt,Kxr;			
 	extern volatile float accel;
-	extern volatile float off_dt;	
 	
 	extern volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000];
 	extern volatile uint16_t test_valR2[1000],test_valL2[1000]; 

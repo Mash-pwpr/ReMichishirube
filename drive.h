@@ -75,7 +75,7 @@
 	
 	
 	volatile uint16_t t_cnt_l, t_cnt_r,t_cnt_w;
-	volatile uint16_t time, ms_time;		//テーブルカウンタ
+	volatile uint16_t time,time2, ms_time;		//テーブルカウンタ
 	volatile uint16_t minindex, maxindex,maxindex_w;				//最低速度・最大速度
 	volatile uint16_t interval_l, interval_r;			//左右インターバル
 	
@@ -83,8 +83,8 @@
 	volatile float Kvolt,Kxr;					//加速度計算するための電流定数，距離変換のための定数
 	volatile float accel;					//目標加速度？
 	
-	volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000];			//速度ログなどの保存用配列
-	volatile uint16_t test_valR2[1000],test_valL2[1000]; 	//エンコーダ獲得値などの保存用配列
+	volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000],test_valR2[1000],test_valL2[1000];			//速度ログなどの保存用配列
+	//volatile float test_valR2[1000],test_valL2[1000]; 	//エンコーダ獲得値などの保存用配列
 	
 	
 	volatile uint16_t pulse_l, pulse_r, pulse_pre_r, pulse_pre_l;					//左右パルスカウント
@@ -127,9 +127,8 @@
 	extern volatile float kapG,kadG;
 	extern volatile float apid_G; 
 
-	
 	extern volatile uint16_t t_cnt_l, t_cnt_r,t_cnt_w;
-	extern volatile uint16_t time, ms_time;
+	extern volatile uint16_t time,time2, ms_time;
 	extern volatile uint16_t minindex, maxindex,maxindex_w;		//最低速度・最大速度
 	extern volatile uint16_t interval_l, interval_r;	//左右インターバル
 	
@@ -137,8 +136,8 @@
 	extern volatile float Kvolt,Kxr;			
 	extern volatile float accel;
 	
-	extern volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000];
-	extern volatile uint16_t test_valR2[1000],test_valL2[1000]; 
+	extern volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000],test_valR2[1000],test_valL2[1000];
+	//extern volatile float test_valR2[2000],test_valL2[2000]; 
 	
 	extern volatile uint16_t pulse_l, pulse_r,pulse_pre_r, pulse_pre_l;		
 	extern volatile int32_t dif_pulse_r, dif_pulse_l,pulse_sum_l, pulse_sum_r;
@@ -156,7 +155,7 @@
 	//----基幹関数----
 	void driveA(float);	//加速走行
 	void driveD(uint16_t, unsigned char);	//減速走行
-	void driveAD(float, unsigned char);	//加減速走行
+	void driveAD(float);	//加減速走行
 	void driveU(uint16_t, unsigned char);	//等速走行(前の速度を維持)
 	void driveC(uint16_t, unsigned char);	//定速走行(あらかじめ決まった速度)
 	void set_dir(unsigned char);		//進む方向の設定

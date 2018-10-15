@@ -110,3 +110,12 @@ float GYRO_read(void){
 	omega = (float)(gyro_z / GYRO_FIX);
 	return omega;
 }
+
+void GYRO_OFFSET(uint16_t num){
+	/*float gyro_offset = 0;
+	int i;
+	
+	for(i=0;i<num;i++){
+		gyro_offset += (GYRO_read()
+*/
+}

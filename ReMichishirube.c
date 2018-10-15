@@ -26,8 +26,8 @@ int main(void) {
 
 	//====変数宣言====
 	char mode = 0;
-	uint16_t i,j,res_data;
-	float ttt;
+	uint16_t i,j;
+	//float ttt;
 	//====初期化====
 	R_PG_Clock_Set();					//クロック設定
 
@@ -37,12 +37,7 @@ int main(void) {
 	sensor_Init();						//センサ系の初期化
 	uart_Init();					//シリアル通信の初期化
 
-/*	while(1){
-		ttt = GYRO_read();
-		uart_printf("GYRO :%lf \r\n",ttt);	
-		ms_wait(100);
-	}
-*/
+
 /*	S12AD.ADANS0.WORD = 0x40;
 	R_PG_ADC_12_StartConversionSW_S12AD0();					
 	R_PG_ADC_12_GetResult_S12AD0(ad_res);
@@ -60,46 +55,44 @@ int main(void) {
 				}
 			}
 */
-/*		
+		
 	set_dir(FORWARD);
+	
 	sensor_start();
-	drive_start();
+	melody(1120,1000);
+	time2=0;
+	
+	driveAD(90);
+
+	
+/*	get_base();
 	ms_wait(100);
-			
-*/			
-	MF.FLAG.ACTRL = 1;
-	MF.FLAG.VCTRL = 0;
-	MF.FLAG.WCTRL = 0;
-	MF.FLAG.XCTRL = 0;
-	MF.FLAG.CTRL = 0;
+	//drive_start();
 	
-	MF.FLAG.ACCL = 0;
-	MF.FLAG.DECL = 0;
-	
-	targ_angle = 0;
-
-	set_dir(FORWARD);
-	sensor_start();
-	drive_start();
-	
-	//ms_wait(1800);
-	while(1){
-		uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n",angle_G, dif_angle, apid_G);
-		ms_wait(100);
-	}
 	//set_position();
-/*	half_sectionA();
-	half_sectionD();
+	time2 = 0;
+	MF.FLAG.CTRL = 1;
+	driveA(HALF_MM * 2);
+	//driveD(HALF_MM,1);
 	
+/*	half_sectionA2();
 	half_sectionA();
-	half_sectionD();
+	
+	half_sectionA2();
+	half_sectionA();
 
-	half_sectionA();
+	half_sectionA2();
 	half_sectionD();
 */
+
+		
+
 	drive_stop(1);
 	sensor_stop();
-		
+	melody(1320,300);
+	melody(1397,300);
+	melody(1568,300);
+
 	//a_section();
 	melody(1120,1000);
 
@@ -111,15 +104,17 @@ int main(void) {
 		//----選択項目の実行----
 		switch(mode){
 		case 0:	//----基準値を取る----
-			get_base();											//get_base()はsensor.cに関数定義あり 　制御のための壁基準値取得
+			//get_base();											//get_base()はsensor.cに関数定義あり 　制御のための壁基準値取得
 			//----情報をシリアル送信----
 			//uart_printf("base_l = %3d, ", base_l);				//UART_printf()はuart.cに関数定義あり
 			//uart_printf("base_r = %3d\r", base_r);
+			
 			ms_wait(500);
 			uart_printf("START\r\n");
-			uart_printf("R1\tL1\tR\tL\r\n");
+			uart_printf("base:%d, %d\r\n", base_r, base_l);
+			uart_printf("duty_r\tduty_l\tsenR\tsenL\tdif\r\n");
 			for(i=0;i<2000;i++){
-				uart_printf("%lf, %lf,%lf, %lf\r\n",test_valR1[i],test_valL1[i],test_valR[i],test_valL[i]);
+				uart_printf("%lf, %lf,%lf, %lf\r\n",test_valR[i],test_valL[i],test_valR1[i],test_valL1[i]);//test_valR2[i],test_valL2[i]);
 				ms_wait(1);
 			}
 			uart_printf("ALL\r\n");
@@ -191,7 +186,31 @@ int main(void) {
 			enc_test();
 			ms_wait(100);
 			break;
-			
+		
+		case 7:
+			Wait;
+			start_wait();
+			MF.FLAG.ACTRL = 1;
+			MF.FLAG.VCTRL = 0;
+			MF.FLAG.WCTRL = 0;
+			MF.FLAG.XCTRL = 0;
+			MF.FLAG.CTRL = 0;
+	
+			MF.FLAG.ACCL = 0;
+			MF.FLAG.DECL = 0;
+	
+			targ_angle = 0;
+
+			set_dir(FORWARD);
+			sensor_start();
+			drive_start();
+	
+
+			while(1){
+				uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n",angle_G, dif_angle, apid_G);
+				ms_wait(100);
+			}
+			break;
 			
 			//----センサ値, 差を確認----
 			//LED点灯は要変更

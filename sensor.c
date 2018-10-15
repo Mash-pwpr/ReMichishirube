@@ -26,6 +26,7 @@ unsigned char get_base()
 {
 	unsigned char res = 0;										//理想的な値を取得できたか
 
+	ms_wait(10);
 	//----制御用の基準を取得----
 	base_l = ad_l;										//現在の左側のセンサ値で決定
 	base_r = ad_r;										//現在の右側のセンサ値で決定

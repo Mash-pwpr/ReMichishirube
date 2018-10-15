@@ -103,19 +103,18 @@ void a_sectionU() {
 // 引数：なし
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
-/*void turn_R90(){
-	MF.FLAG.CTRL = 0;									//制御を無効にする
-	set_dir(TURN_R);									//右に回転するようモータの回転方向を設定
- 	driveC(DR_ROT_R90, 1);									//低速で指定パルス分回転。回転後に停止する
-	Wait;													//完全に停止するまで待機
-	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
-}*/
 //DC用に改造
-void turn_R90(){
+/*void turn_R90(){
 	MF.FLAG.CTRL = 0;									//制御を無効にする
 	set_dir(TURN_R);									//右に回転するようモータの回転方向を設定
 	driveC(ROT_TIME, 1);									//低速で指定パルス分回転。回転後に停止する
 	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
+}*/
+void turn_R90(){
+	MF.FLAG.CTRL = 0;								//制御を無効にする
+	set_dir(TURN_R);								//右に回転するようモータの回転方向を設定
+	driveAD(-90, 1);								//低速で指定パルス分回転。回転後に停止する
+	set_dir(FORWARD);								//前進するようにモータの回転方向を設定
 }
 
 
@@ -174,21 +173,8 @@ void set_position()
 // 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
-/*void driveA(uint16_t dist, unsigned char rs) {
-	//====走行====
-	//----走行開始----
-	MF.FLAGS = 0x10 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
-	drive_start();											//走行開始
-
-	//----走行----
-	while((pulse_l < dist) && (pulse_r < dist));			//左右のモータが指定パルス以上進むまで待機
-
-	//----停止許可があれば停止----
-	drive_stop(rs);
-}*/
-
 //DC用に改造しているdriveA,距離はオッケー
-void driveA(float dist, unsigned char rs) {					//引数　走行距離　停止の有無（1で停止，０で継続走行）,vel0とtimeは触れていない
+void driveA(float dist) {					//引数　走行距離　停止の有無（1で停止，０で継続走行）,vel0とtimeは触れていない
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x00 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
@@ -198,8 +184,6 @@ void driveA(float dist, unsigned char rs) {					//引数　走行距離　停止
 	totalG_mm = 0;
 	totalR_mm = 0;
 	totalL_mm = 0;					//走行距離をリセット
-	
-	//offsetG_mm = 0.5 * max_vel_G * maxindex * 1000;		//v-tグラフにおける速度減少部の面積　⇒　減少に必要な距離
 	drive_start();								//走行開始
 	
 	//----走行----
@@ -293,28 +277,41 @@ void driveD(uint16_t dist, unsigned char rs) {
 
 }*/
 
-//DC用に改造，目的は超信地のみ
-void driveAD(float dist, unsigned char rs)
+//DC用に改造，目的は超信地のみ 引数1:
+void driveAD(float deg)
 {
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x10 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
+	MF.FLAG.ACTRL = 1;
+	MF.FLAG.VCTRL = 0;
+	MF.FLAG.WCTRL = 0;
+	MF.FLAG.XCTRL = 0;
+	MF.FLAG.CTRL = 0;
+	
+	MF.FLAG.ACCL = 0;
+	MF.FLAG.DECL = 0;
+
 	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	targ_angle = deg;
 	drive_start();								//走行開始
 	
+	ms_wait(1500);	
 	//----走行----
 	/*while((totalL_mm - offsetL_mm) < dist){
 			offsetL_mm = rs * 0.5 * max_vel_G * off_dt;		//v-tグラフにおける速度減少部の面積　⇒　減少に必要な距離
 	}*/	
-	if(rs){
+/*	if(rs){
 		MF.FLAG.CTRL = 0;
 		velR0 = velL0 = 0;
 		ms_wait(100);			//速度がゼロに収束するまで待つ
 		t_cnt_r = t_cnt_l = 0;
 	}
+*/
 	//----停止許可があれば停止----
-	drive_stop(rs);	
-	offsetL_mm = 0;
+	drive_stop(1);	
+	angle_G = 0;
+	
 }
 
 
@@ -557,7 +554,7 @@ void test_drive(char *mode){
 				maxindex = MAXSPEED_H;
 				stay(DEFWAIT);
 				MF.FLAG.CTRL = 1;
-				driveAD((DR_SEC_HALF*2) * 6, 1);
+				
 				break;
 
 			//----探索用加減速1区画----

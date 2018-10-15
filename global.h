@@ -50,9 +50,11 @@
 #define DR_CENT_SET 95		//後ろ壁から中央までのパルス数
 #define CENTER_TIME 350
 
-#define CONT0 1 //0.0001				//壁Pゲイン
-#define CONT1 0.000025				//壁Pゲイン
-#define CONT2 0.000025				//壁Pゲイン
+#define CONT_FIX_L 1
+
+#define CONT0 0.05 //0.0001			//壁Pゲイン
+#define CONT1 0.0005				//壁Pゲイン
+#define CONT2 0.00025				//壁Pゲイン
 #define CONT3 0.0001				//壁Pゲイン
 #define CONT4 0.0001				//壁Pゲイン
 
@@ -83,8 +85,9 @@
 #define R_BODY 35
 #define MASS 0.1
 #define VOLT_BAT 7.4
-#define KR 1.1
-#define KL 1
+
+#define KR 1
+#define KL 1.1
 
 //---速度PIDゲイン---
 #define V_KP 1.3
@@ -96,8 +99,8 @@
 #define W_KP 10
 #define W_KD 1
 
-#define A_KP 0.05
-#define A_KD 0
+#define A_KP 0.0025 //0.05
+#define A_KD 0.15
 
 //----タイマ関連----
 #define DEFGRC 22000		//デフォルトのインターバル
@@ -105,25 +108,25 @@
 /*------------------------------------------------------------
 		センサ系t
 ------------------------------------------------------------*/
-//----壁判断基準----
-#define WALL_BASE_F 3700		//前壁
-#define WALL_BASE_L 3200		//左壁
-#define WALL_BASE_R 3200		//右壁
+//----壁判断基準----				東北
+#define WALL_BASE_F 850		//前壁 3700
+#define WALL_BASE_L 600		//左壁 3200
+#define WALL_BASE_R 600		//右壁 3200
 
 #define WALL_START 3500
 
 //----制御基準値----
-#define SREF_MIN_L 10	//左制御基準下限-20
-#define SREF_MAX_L 3000	//左制御基準上限280
-#define SREF_MIN_R 10	//右制御基準下限-20
-#define SREF_MAX_R 3000 //右制御基準上限280
+#define SREF_MIN_L 0	//左制御基準下限-20
+#define SREF_MAX_L 4000	//左制御基準上限280
+#define SREF_MIN_R 0	//右制御基準下限-20
+#define SREF_MAX_R 4000 //右制御基準上限280
 
 /*------------------------------------------------------------
 		探索系
 ------------------------------------------------------------*/
 //----ゴール座標----
-#define GOAL_X 7	//7
-#define GOAL_Y 7	//7
+#define GOAL_X 3	//7
+#define GOAL_Y 3	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義

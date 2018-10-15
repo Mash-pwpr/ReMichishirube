@@ -226,14 +226,16 @@ void Cmt1IntFunc(void){
 			dif_r = (int16_t)(ad_r - base_r);
 
 			//制御範囲との比較
-			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L))
-				sen_dl = cont_l * dif_l;	//ゲインとの積を出す
-			else
+			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
+				sen_dl = (float)dif_l * cont_l;	//ゲインとの積を出す
+			}else{
 				sen_dl = 0;	//範囲外なら０に
-			if((SREF_MIN_R < dif_r) && (dif_r < SREF_MAX_R))
-				sen_dr = cont_r * dif_r;
-			else
+			}
+			if((SREF_MIN_R < dif_r) && (dif_r < SREF_MAX_R)){
+				sen_dr = (float)dif_r * cont_r;
+			}else{
 				sen_dr = 0;
+			}
 		}else{
 			//そもそもフラグ無
 			sen_dl = sen_dr = 0;
@@ -248,6 +250,7 @@ void Cmt1IntFunc(void){
 void Cmt2IntFunc(){
 
 	time++;
+	time2++;
 	//エンコーダの値取得
 	R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
 	R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
@@ -299,10 +302,14 @@ void Cmt2IntFunc(){
 	vel_L = xL;
 	vel_G = xG;
 		
-/*	test_valR[time] = angle_G;
-	test_valL[time] = dif_angle;
-	test_valR1[time] = duty_r;
-	test_valL1[time] = duty_l;
+	test_valR[time2] = angle_G;//angle_G, sen_dr;
+	test_valL[time2] = dif_angle;//dif_angle, sen_dl;
+	
+	test_valR1[time2] = kapG;//ad_r
+	test_valL1[time2] = kadG;//ad_l
+	
+/*	test_valR2[time2] = apid_G;//dif_r	
+	test_valL2[time2] = 0;//dif_l
 	
 	test_valR[time] = targ_vel[t_cnt_r];
 	test_valL[time] = targ_vel[t_cnt_l];
@@ -310,8 +317,7 @@ void Cmt2IntFunc(){
 	test_valL1[time] = totalL_mm;
 	
 	test_valR1[time/4] = pulse_r;
-	test_valR2[time/4] = dif_pulse_r;
-		
+	test_valR2[time/4] = dif_pulse_r;	
 	test_valL2[time/4] = dif_pulse_l;
 */		
 	//PIDしてみる？
@@ -366,7 +372,7 @@ void Cmt2IntFunc(){
 		kadG = A_KD * (dif_angle - dif_pre_angle);	
 			
 		//PID制御値を統合
-		apid_G = (kapG - kadG);
+		apid_G = (kapG + kadG);
 		//現在の偏差をバッファに保存 D制御で使う
 		dif_pre_angle = dif_angle;		
 	}else{

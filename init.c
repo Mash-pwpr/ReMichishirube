@@ -63,7 +63,7 @@ void val_Init(void){
 	base_l = base_r = 0;
 	pulse_sum_l = pulse_sum_r = 0;
 	pulse_pre_l = pulse_pre_r = 0;
-	time = 0;
+	time = time2 = 0;
 	velR0 = velL0 = 1;
 
 	//足回り系？

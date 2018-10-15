@@ -34,17 +34,9 @@ void stay(unsigned int loop){
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void ms_wait(unsigned int ms){
 
-	//uint16_t timercnt, i;
 	// PDGで動作クロックを、システムクロック20MHzを32で割って分周してある
 	R_PG_Timer_StartCount_CMT_U0_C0(); // カウントスタート
-
-	/*for(i=0; i<ms; i++){
-		R_PG_Timer_SetCounterValue_CMT_U0_C0(0); // カウント値をゼロに戻す
-		do{
-			R_PG_Timer_GetCounterValue_CMT_U0_C0(&timercnt); // カウント値を取得
-		} while(timercnt < 624 ); // 624カウント目で1ms経ったことになる
-	}
-*/	
+	
 	ms_time = 0;
 	while(ms_time < ms){
 	}
@@ -90,7 +82,7 @@ void select_mode(char *mode){
 	uint16_t encR,encL;
 	uint16_t nowR = 0;
 	uint16_t nowL = 0;
-	uint16_t preR,preL;
+	uint16_t preR;
 	
 	*mode = 0x00;									//変数の初期化
 	R_PG_Timer_SetCounterValue_MTU_U0_C1(0);
@@ -105,7 +97,7 @@ void select_mode(char *mode){
 	//====モード選択処理====
 	do{	
 		preR = nowR;
-		preL = nowL;
+		//preL = nowL;
 		
 		R_PG_Timer_GetCounterValue_MTU_U0_C1(&encL);
 		R_PG_Timer_GetCounterValue_MTU_U0_C2(&encR);

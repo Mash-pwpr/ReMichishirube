@@ -18,5 +18,6 @@
 		uint8_t SPI_read_byte(uint8_t);
 		void SPI_write_byte(uint8_t, uint8_t);
 		float GYRO_read(void);
+		void GYRO_OFFSET(uint16_t);
 		
 #endif /* UART_H_ */

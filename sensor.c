@@ -28,8 +28,8 @@ unsigned char get_base()
 
 	ms_wait(10);
 	//----制御用の基準を取得----
-	base_l = ad_l;										//現在の左側のセンサ値で決定
-	base_r = ad_r;										//現在の右側のセンサ値で決定
+	base_l = ad_l - WALL_OFFSET;										//現在の左側のセンサ値で決定
+	base_r = ad_r - WALL_OFFSET;										//現在の右側のセンサ値で決定
 
 	//----基準が理想的だとLED点滅----
 	if((-50 < (int)(base_l - base_r)) && ((int)(base_l - base_r) < 50)){

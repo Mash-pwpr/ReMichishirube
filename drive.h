@@ -55,10 +55,10 @@
 	volatile float vpid_R,vpid_L;
 	
 	/***位置のPID計算***/
-	volatile float dif_x_R,dif_x_L;
-	volatile float dif_pre_x_R,dif_pre_x_L;
-	volatile float kxpR,kxdR,kxdL,kxpL;
-	volatile float xpid_R,xpid_L;
+	volatile float dif_x_R,dif_x_L,dif_x_G;
+	volatile float dif_pre_x_R,dif_pre_x_L,dif_pre_x_G;
+	volatile float kxpR,kxdR,kxdL,kxpL,kxpG,kxdG;
+	volatile float xpid_R,xpid_L,xpid_G;
 	
 	/***角速度のPID計算***/
 	volatile float targ_omega[2000],max_omega_G,accel_omega;
@@ -109,10 +109,10 @@
 	extern volatile float vpid_R,vpid_L;
 
 	/***位置のPID計算***/
-	extern volatile float dif_x_R,dif_x_L;
-	extern volatile float dif_pre_x_R,dif_pre_x_L;
-	extern volatile float kxpR,kxdR,kxdL,kxpL;	
-	extern volatile float xpid_R,xpid_L;
+	extern volatile float dif_x_R,dif_x_L,dif_x_G;
+	extern volatile float dif_pre_x_R,dif_pre_x_L,dif_pre_x_G;
+	extern volatile float kxpR,kxdR,kxdL,kxpL,kxpG,kxdG;	
+	extern volatile float xpid_R,xpid_L,xpid_G;
 	
 	/***角速度のPID計算***/
 	extern volatile float targ_omega[2000],max_omega_G,accel_omega;
@@ -137,7 +137,6 @@
 	extern volatile float accel;
 	
 	extern volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000],test_valR2[1000],test_valL2[1000];
-	//extern volatile float test_valR2[2000],test_valL2[2000]; 
 	
 	extern volatile uint16_t pulse_l, pulse_r,pulse_pre_r, pulse_pre_l;		
 	extern volatile int32_t dif_pulse_r, dif_pulse_l,pulse_sum_l, pulse_sum_r;
@@ -156,8 +155,10 @@
 	void driveA(float);	//加速走行
 	void driveD(uint16_t, unsigned char);	//減速走行
 	void driveAD(float);	//加減速走行
-	void driveU(uint16_t, unsigned char);	//等速走行(前の速度を維持)
-	void driveC(uint16_t, unsigned char);	//定速走行(あらかじめ決まった速度)
+	void driveU(uint16_t, unsigned char);	//使ってない
+	void driveC(uint16_t, unsigned char);	//定時間走行，セッポジぐらいしか使ってない
+	void driveX(uint16_t);			//位置・角度制御走行
+	
 	void set_dir(unsigned char);		//進む方向の設定
 
 	void drive_start();

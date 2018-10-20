@@ -52,6 +52,9 @@ void sensor_Init(void){
 	R_PG_ADC_12_Set_S12AD0();
 	//センサ発光部初期設定
 	R_PG_IO_PORT_Set_PE();
+	
+	
+	
 }
 
 // センサ系，走行系，探索系　の変数初期化
@@ -59,7 +62,8 @@ void val_Init(void){
 	int i;
 	//----センサ系----
 	tp = 0;
-	ad_l = ad_r = ad_fr = ad_fl = 0;
+	ad_l = ad_r = ad_ff = ad_fr = ad_fl = 0;
+	ad_r_off = ad_fr_off = ad_ff_off = ad_fl_off = ad_l_off = 0;
 	base_l = base_r = 0;
 	pulse_sum_l = pulse_sum_r = 0;
 	pulse_pre_l = pulse_pre_r = 0;

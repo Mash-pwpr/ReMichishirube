@@ -37,6 +37,7 @@
 		//----その他----
 		unsigned char tp;											//タスクポインタ
 		volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;						//A-D値格納
+		volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
 		volatile uint16_t ad_res[5],ad_pre_res[5];
 		volatile uint16_t base_l, base_r;								//基準値を格納
 		volatile int16_t dif_l, dif_r;									//AD値と基準との差
@@ -53,9 +54,10 @@
 		extern uint16_t VLED_L;
 		//----その他----
 		extern unsigned char tp;
-		extern volatile int16_t ad_r, ad_fr,ad_ff, ad_fl, ad_l;
+		extern volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;
+		extern volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
 		extern volatile uint16_t ad_res[5],ad_pre_res[5];
-		extern volatile uint16_t base_l,  base_r;
+		extern volatile uint16_t base_l, base_r;
 		extern volatile int16_t dif_l, dif_r;
 		extern volatile uint16_t volt_bat;
 		extern volatile float omega_G, angle_G,omega_G_rad;

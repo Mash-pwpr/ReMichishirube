@@ -36,6 +36,7 @@ int main(void) {
 	timer_Init();						//タイマ系の初期化
 	sensor_Init();						//センサ系の初期化
 	uart_Init();					//シリアル通信の初期化
+	map_Init();
 
 
 /*	S12AD.ADANS0.WORD = 0x40;
@@ -44,36 +45,29 @@ int main(void) {
 	volt_bat = ad_res[6];
 	ms_wait(100);
 
-		if(volt_bat < 3000 && 1000 < volt_bat){
-				melody(1320,500);
-				melody(1120,500);
-				melody(920,500);
-				R_PG_Timer_StopModule_MTU_U0();
-				R_PG_Timer_StopModule_CMT_U0();
-				uart_printf("Voltage Out! volt is %d\r\n",volt_bat);
-				while(1){
-				}
-			}
+	if(volt_bat < 3000 && 1000 < volt_bat){
+		melody(1320,500);
+		melody(1120,500);
+		melody(920,500);
+		R_PG_Timer_StopModule_MTU_U0();
+		R_PG_Timer_StopModule_CMT_U0();
+		uart_printf("Voltage Out! volt is %d\r\n",volt_bat);
+		while(1){
+		}
+	}
 */
 		
 	set_dir(FORWARD);
 	
 	sensor_start();
+	
+/*	MF.FLAG.CTRL = 0;
+	driveAD(-90);
 	melody(1120,1000);
-	time2=0;
 	
-	driveAD(90);
-
-	
-/*	get_base();
+	get_base();
 	ms_wait(100);
 	//drive_start();
-	
-	//set_position();
-	time2 = 0;
-	MF.FLAG.CTRL = 1;
-	driveA(HALF_MM * 2);
-	//driveD(HALF_MM,1);
 	
 /*	half_sectionA2();
 	half_sectionA();
@@ -85,16 +79,14 @@ int main(void) {
 	half_sectionD();
 */
 
-		
-
 	drive_stop(1);
 	sensor_stop();
-	melody(1320,300);
+/*	melody(1320,300);
 	melody(1397,300);
 	melody(1568,300);
-
+*/
 	//a_section();
-	melody(1120,1000);
+	melody(c6h,1000);
 
 	while(1){ // Main Loop
 		uart_printf("Hello, World!\r\n");	
@@ -218,7 +210,9 @@ int main(void) {
 			Wait;
 			val_Init();
 			MF.FLAG.CTRL = 1;	//制御許可
+			start_wait();
 			R_PG_Timer_StartCount_CMT_U0_C1();
+			get_base();
 			while(1){
 				pins_write(DISP_LEDS, 0, LED_NUM);											//pins_write()はport.cに関数定義あり
 				uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d ", ad_l, ad_fl, ad_ff, ad_fr, ad_r);
@@ -245,6 +239,7 @@ int main(void) {
 			break;
 		}
 		ms_wait(100);
+
 	}
 
 	return 0 ;

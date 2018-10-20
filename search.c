@@ -58,7 +58,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 			//----前進----
 			case 0x88:
 				set_dir(FORWARD);
-				melody(1120,500);
+				//melody(1120,500);
 				break;
 			//----右折----
 			case 0x44:
@@ -124,12 +124,20 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 	sensor_start();
 	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
+	
+	if(ad_ff > WALL_BASE_F){
+		turn_180();
+		Wait;	
+		turn_dir(DIR_TURN_180);
+		set_dir(FORWARD);
+	}
+	
 	half_sectionA();
 	adv_pos();
 	conf_route();
 	//====探索走行====
 	do{
-		if(ad_r > WALL_BASE_R){
+/*		if(ad_r > WALL_BASE_R){
 			cont_r = Cont_kp[0];
 		}else	{
 			cont_r = 0;	
@@ -140,7 +148,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 		}else{
 			cont_l = 0;		
 		}
-		//----進行----
+*/		//----進行----
 		switch(route[r_cnt++]){								//route配列によって進行を決定。経路カウンタを進める
 			//----前進----
 			case 0x88:
@@ -149,43 +157,54 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 			//----右折----
 			case 0x44:
 				half_sectionD();
+				if(ad_l > WALL_BASE_L){
+					MF.FLAG.SET = 1;
+				}
 				turn_R90();
 				Wait;
-				if(ad_l > WALL_BASE_L){
-					set_position();
-				}
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
+				if(MF.FLAG.SET){
+					set_position();
+					MF.FLAG.SET = 0;
+				}
 				half_sectionA();			//ここで実は一文だけ抜けています、がんばって　標
 				break;
 			//----180回転----
 			case 0x22:
 				half_sectionD();
+				if(ad_ff > WALL_BASE_F){
+					MF.FLAG.SET = 1;
+				}
 				turn_180();
 				Wait;
-				if(ad_ff > WALL_BASE_F){
-					set_position();
-				}
 				turn_dir(DIR_TURN_180);
-				
 				set_dir(FORWARD);
+
+				if(MF.FLAG.SET){
+					set_position();
+					MF.FLAG.SET = 0;
+				}
 				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
 				break;
 			//----左折----
 			case 0x11:
 				half_sectionD();
+				if(ad_l > WALL_BASE_L){
+					MF.FLAG.SET = 1;
+				}
 				turn_L90();
 				Wait;
-				if(ad_l > WALL_BASE_L){
-					set_position();
-				}
-
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
+				if(MF.FLAG.SET){
+					set_position();
+					MF.FLAG.SET = 0;
+				}
 				half_sectionA();			//想定通り、ここでも何か抜けてます、がんばって  標
 				break;
 		}
-		uart_printf("x:%d, y:%d\r\n",PRELOC.AXIS.X,PRELOC.AXIS.Y);
+		//uart_printf("x:%d, y:%d\r\n",PRELOC.AXIS.X,PRELOC.AXIS.Y);
 		adv_pos();
 		conf_route();
 
@@ -193,7 +212,16 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 	}while((PRELOC.AXIS.X != goal_x) || (PRELOC.AXIS.Y != goal_y));
 	half_sectionD();
 	ms_wait(2000);
-
+	melody(g6,300);
+	melody(f6,300);
+	melody(e6,300);
+	
+	pin_write(PE0,0);								
+	pin_write(PE1,0);
+	pin_write(PE2,0);
+	pin_write(PE3,0);
+	pin_write(PE4,0);
+	
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++

@@ -24,7 +24,7 @@ void Mtu3IcCmDIntFunc(void){		//パルス一周期でやると呼び出される
 	pin_write(P55,0);
 
 	//duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
-	duty_l = KL * (vpid_L + sen_dl + xpid_L - wpid_G - apid_G);
+	duty_l = KL * (vpid_L + sen_dl + xpid_G - wpid_G - apid_G);
 	
 	if(duty_l < 0){
 		MF.FLAG.L_DIR = 0;					
@@ -84,7 +84,7 @@ void Mtu4IcCmDIntFunc(void){			//右モータ制御関数
 	pin_write(PA6,0);
 
 	//duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
-	duty_r = KR * (vpid_R + sen_dr + xpid_R + wpid_G + apid_G);
+	duty_r = KR * (vpid_R + sen_dr + xpid_G + wpid_G + apid_G);
 	if(duty_r < 0){
 		MF.FLAG.R_DIR = 0;
 		//duty_oR = duty_r;
@@ -148,7 +148,7 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x02;
 		R_PG_ADC_12_StartConversionSW_S12AD0();					
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_l = ad_res[1];
+		ad_l = ad_res[1] - ad_l_off;
 		
 		//右壁センサ
 		pin_write(PE3,1);
@@ -156,7 +156,7 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x08;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_r =  ad_res[3];
+		ad_r =  ad_res[3] - ad_r_off;
 				
 		break;
 	case 1:
@@ -173,17 +173,17 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x01;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_fl = ad_res[0];
+		ad_fl = ad_res[0] - ad_fl_off;
 		
 		S12AD.ADANS0.WORD = 0x04;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_ff = ad_res[2];
+		ad_ff = ad_res[2] - ad_ff_off;
 
 		S12AD.ADANS0.WORD = 0x10;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_fr = ad_res[4];
+		ad_fr = ad_res[4] - ad_fr_off;
 		
 		break;
 	case 2:
@@ -227,11 +227,17 @@ void Cmt1IntFunc(void){
 
 			//制御範囲との比較
 			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
-				sen_dl = (float)dif_l * cont_l;	//ゲインとの積を出す
+				if(SREF_HALF_L < dif_l)
+				sen_dl = (float)dif_l * cont_l * CONT_FIX ;
+				else
+				sen_dl = (float)dif_l * cont_l;
 			}else{
 				sen_dl = 0;	//範囲外なら０に
 			}
 			if((SREF_MIN_R < dif_r) && (dif_r < SREF_MAX_R)){
+				if(SREF_HALF_R < dif_r)
+				sen_dr = (float)dif_r * cont_r * CONT_FIX;
+				else
 				sen_dr = (float)dif_r * cont_r;
 			}else{
 				sen_dr = 0;
@@ -287,7 +293,7 @@ void Cmt2IntFunc(){
 */
 
 	//物理量計算
-	xR = Kxr * (dif_pulse_r % 4096);
+	xR = Kxr * (dif_pulse_r % 4096);	//割込周期1[ms]での変位[mm] →　速度[m/s]
 	xL = Kxr * (dif_pulse_l % 4096);
 	xG = 0.5 * (xR + xL);
 
@@ -302,23 +308,21 @@ void Cmt2IntFunc(){
 	vel_L = xL;
 	vel_G = xG;
 		
-	test_valR[time2] = angle_G;//angle_G, sen_dr;
-	test_valL[time2] = dif_angle;//dif_angle, sen_dl;
+/*	test_valR[time2] = kxpG;//angle_G, sen_dr;
+	test_valL[time2] = kxdG;//dif_angle, sen_dl;
 	
-	test_valR1[time2] = kapG;//ad_r
-	test_valL1[time2] = kadG;//ad_l
+	test_valR1[time2] = totalG_mm;//ad_r
+	test_valL1[time2] = dif_x_G;//ad_l
 	
-/*	test_valR2[time2] = apid_G;//dif_r	
+	test_valR2[time2] = apid_G;//dif_r	
 	test_valL2[time2] = 0;//dif_l
 	
 	test_valR[time] = targ_vel[t_cnt_r];
 	test_valL[time] = targ_vel[t_cnt_l];
+	
 	test_valR1[time] = totalR_mm;
 	test_valL1[time] = totalL_mm;
 	
-	test_valR1[time/4] = pulse_r;
-	test_valR2[time/4] = dif_pulse_r;	
-	test_valL2[time/4] = dif_pulse_l;
 */		
 	//PIDしてみる？
 	
@@ -378,11 +382,15 @@ void Cmt2IntFunc(){
 	}else{
 		apid_G = 0;
 	}
-
 	
+	if(MF.FLAG.XCTRL){
+		dif_x_G = (targ_total_mm - totalG_mm);
+		kxpG = X_KP * dif_x_G;
+		kxdG = X_KD * (dif_pre_x_G - dif_x_G);
+		xpid_G = (kxpG - kxdG);
+		dif_pre_x_G = dif_x_G;
 	
-/*	if(MF.FLAG.XCTRL){
-		dif_x_R = (targ_total_mm - totalR_mm);
+/*		dif_x_R = (targ_total_mm - totalR_mm);
 		dif_x_L = (targ_total_mm - totalL_mm);	
 		kxpR = X_KP * dif_vel_R;
 		kxpL = X_KP * dif_vel_L;
@@ -393,11 +401,10 @@ void Cmt2IntFunc(){
 		//現在の偏差をバッファに保存 D制御で使う	
 		dif_pre_x_R = dif_x_R;
 		dif_pre_x_L = dif_x_L;
-	}else{
-		xpid_R = 0;
-		xpid_L = 0;
+*/	}else{
+		xpid_G = 0;
 	}
-*/
+
 }
 
 

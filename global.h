@@ -39,30 +39,18 @@
 		走行系
 ------------------------------------------------------------*/
 //----走行パルス関連----
-//#define DR_SEC_AD 430		//加減速1区画
-//#define DR_SEC_U 430		//等速1区画
-//#define DR_SEC_ADL 360	//長距離加減速時1区画
-#define DR_SEC_HALF 208		//半区画走行用パルス。2倍すると1区画分に 205
-#define DR_ROT_R90 3.14*R_BODY*0.5	//右90度距離mm 145
-#define	DR_ROT_L90 3.14*R_BODY*0.5  //左90度距離mm 145
-#define DR_ROT_180 294		//180度回転用パルス数 289
-#define DR_CENT_BACK 300	//後ろ壁に当てるために下がるパルス数
-#define DR_CENT_SET 95		//後ろ壁から中央までのパルス数
+
+#define ROT_ANGLE_R90 -90	//右90度距離mm 145
+#define	ROT_ANGLE_L90 90  	//左90度距離mm 145
+#define ROT_ANGLE_180 180		//180度回転用パルス数 289
+#define SET_MM 54	//後ろ壁に当てるために下がるパルス数
+
 #define CENTER_TIME 350
-
-#define CONT_FIX_L 1
-
-#define CONT0 0.05 //0.0001			//壁Pゲイン
-#define CONT1 0.0005				//壁Pゲイン
-#define CONT2 0.00025				//壁Pゲイン
-#define CONT3 0.0001				//壁Pゲイン
-#define CONT4 0.0001				//壁Pゲイン
-
 #define ROT_TIME 355
 #define ROT180_TIME 500
 
-#define GYRO_FIX 16.4
-#define KW 0.01744				//Pi/180
+#define GYRO_FIX 16.4				//ジャイロデータを物理量変換する係数，ジャイロデータシート参照
+#define KW 0.01744				//Pi/180　度数→ラジアンに変換する定数
 
 //----DC走行関連----
 #define HALF_MM 90
@@ -91,16 +79,47 @@
 
 //---速度PIDゲイン---
 #define V_KP 1.3
-#define X_KP 1.3
 #define V_KD 0.2
-#define X_KD 0.1
 #define V_KI 0
+
+#define X_KP 0.001
+#define X_KD 0.2
 
 #define W_KP 10
 #define W_KD 1
 
-#define A_KP 0.0025 //0.05
+#define A_KP 0.0025		 //0.05
 #define A_KD 0.15
+
+//---メロディ周波数---
+#define c6 1046
+#define c6h 1108
+#define d6 1174
+#define d6h 1244
+#define e6 1318
+
+#define f6 1397
+#define f6h 1480
+#define g6 1568
+#define g6h 1661
+#define a6 1760
+#define a6h 1865
+#define b6 1976
+
+
+#define c7 2093
+#define c7h 2217
+#define d7 2349
+#define d7h 2489
+#define e7 2637
+
+#define f7 2794
+#define f7h 2960
+#define g7 3136
+#define g7h 3222
+#define a7 3520
+#define a7h 3729
+#define b7 3951
 
 //----タイマ関連----
 #define DEFGRC 22000		//デフォルトのインターバル
@@ -110,23 +129,34 @@
 ------------------------------------------------------------*/
 //----壁判断基準----				東北
 #define WALL_BASE_F 850		//前壁 3700
-#define WALL_BASE_L 600		//左壁 3200
-#define WALL_BASE_R 600		//右壁 3200
+#define WALL_BASE_L 600//700		//左壁 3200
+#define WALL_BASE_R 600//700		//右壁 3200 600
 
+#define WALL_OFFSET 50
 #define WALL_START 3500
 
+#define CONT_FIX 0.5
+#define CONT0 0.002 				//壁Pゲイン
+#define CONT1 0.0005				//壁Pゲイン
+#define CONT2 0.00025				//壁Pゲイン
+#define CONT3 0.0001				//壁Pゲイン
+#define CONT4 0.0001				//壁Pゲイン
+
+
 //----制御基準値----
-#define SREF_MIN_L 0	//左制御基準下限-20
-#define SREF_MAX_L 4000	//左制御基準上限280
-#define SREF_MIN_R 0	//右制御基準下限-20
-#define SREF_MAX_R 4000 //右制御基準上限280
+#define SREF_MIN_L 10		//左制御基準　　下限　0
+#define SREF_HALF_L 200		//左制御　係数変更点　200
+#define SREF_MAX_L 2000		//左制御基準　　上限　1000
+#define SREF_MIN_R 10		//右制御基準　　下限　0
+#define SREF_HALF_R 200		//右制御　係数変更点　200
+#define SREF_MAX_R 2000		//右制御基準　　上限　1000
 
 /*------------------------------------------------------------
 		探索系
 ------------------------------------------------------------*/
 //----ゴール座標----
-#define GOAL_X 3	//7
-#define GOAL_Y 3	//7
+#define GOAL_X 11	//7
+#define GOAL_Y 6	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義
@@ -146,7 +176,7 @@
 	typedef union {						//共用体の宣言
 		uint16_t FLAGS;
 		struct ms_flags{				//構造体の宣言
-			unsigned char RSV:1;		//予備ビット(B0)		(:1は1ビット分の意味、ビットフィールド)
+			unsigned char SET:1;		//予備ビット(B0)		(:1は1ビット分の意味、ビットフィールド)
 			unsigned char SCND:1;		//二次フラグ(B1)
 			unsigned char SLAL:1;		//旋回フラグ(B2)
 			unsigned char CTRL:1;		//制御フラグ(B3)

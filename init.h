@@ -19,5 +19,6 @@
 		void sensor_Init();		//センサー設定
 		void val_Init();		//センサ系，走行系，探索系　の変数初期化
 		void timer_Init();		//タイマ初期化
+		void batt_Check(uint16_t);
 
 #endif /* TIMER_H_ */

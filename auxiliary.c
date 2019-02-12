@@ -152,6 +152,16 @@ void melody(uint16_t Hz, uint16_t length){
 }
 
 void start_wait(){
+	S12AD.ADANS0.WORD = 0x1f;
+	R_PG_ADC_12_StartConversionSW_S12AD0();
+	R_PG_ADC_12_GetResult_S12AD0(ad_res);
+	
+/*	ad_r_off = ad_res[3];
+	ad_fr_off = ad_res[4];
+	ad_ff_off = ad_res[2];
+	ad_fl_off = ad_res[0];
+	ad_l_off = ad_res[1]; 
+*/
 	R_PG_Timer_StartCount_CMT_U0_C1();
 	uart_printf("Ready???\r\n");
 	
@@ -176,15 +186,7 @@ void start_wait(){
 }
 
 void start_ready(void){
-	S12AD.ADANS0.WORD = 0x1f;
-	R_PG_ADC_12_StartConversionSW_S12AD0();
-	R_PG_ADC_12_GetResult_S12AD0(ad_res);
-	
-	ad_r_off = ad_res[3];
-	ad_fr_off = ad_res[4];
-	ad_ff_off = ad_res[2];
-	ad_fl_off = ad_res[0];
-	ad_l_off = ad_res[1]; 
+
 
 	sensor_start();
 /*	turn_R90();
@@ -201,7 +203,9 @@ void start_ready(void){
 	get_base();
 	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
 	
-	melody(c6,1000	);
+	GYRO_OFFSET(1000);
+	
+	melody(c6,1000);
 /*	driveC(CENTER_TIME, 1);									//定速で指定パルス分回転。回転後に停止する
   	Wait;
 */

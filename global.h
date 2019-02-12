@@ -51,11 +51,14 @@
 
 #define GYRO_FIX 16.4				//ジャイロデータを物理量変換する係数，ジャイロデータシート参照
 #define KW 0.01744				//Pi/180　度数→ラジアンに変換する定数
-
+#define KWP 57.471
 //----DC走行関連----
 #define HALF_MM 90
 #define ONE_MM 180
-#define STOP_OFF_MM 20
+#define STOP_OFF_MM 0
+#define STOP_OFF 0
+#define SLA_OFFSET_B 5
+#define SLA_OFFSET_A 15
 
 //----テーブル速度関連----
 #define MAXSPEED_S 1000		//探索走行時の速度の最大の要素数
@@ -64,32 +67,33 @@
 #define MINSPEED_H 100		//高速走行時の速度の最小の要素数
 
 //----エンコーダ・DCモータ関連----
-#define DIA_WHEEL_mm 13
+#define DIA_WHEEL_mm 11
 #define DIA_PINI_mm 4
 #define DIA_SQUR_mm 17.5
-#define Pi 3.1415
+#define Pi 3.1415926539
 #define Ktolk 1.98
 #define Rmotor 1.07
-#define R_BODY 35
+//#define R_BODY 35
 #define MASS 0.1
 #define VOLT_BAT 7.4
 
 #define KR 1
-#define KL 1.1
+#define KL 1
 
 //---速度PIDゲイン---
-#define V_KP 1.3
-#define V_KD 0.2
-#define V_KI 0
+#define V_KP 5			//8
+#define V_KD 0.3		//0.05
+#define V_KI 0.3		//0.1
 
-#define X_KP 0.001
-#define X_KD 0.2
+#define X_KP 0.005
+#define X_KD 0.50
 
-#define W_KP 10
-#define W_KD 1
+#define W_KP 0.5 //0.30
+#define W_KD 0//0.50
+#define W_KI 0.02
 
-#define A_KP 0.0025		 //0.05
-#define A_KD 0.15
+#define A_KP 0.05		 //0.05
+#define A_KD 5.8
 
 //---メロディ周波数---
 #define c6 1046
@@ -128,15 +132,16 @@
 		センサ系t
 ------------------------------------------------------------*/
 //----壁判断基準----				東北
-#define WALL_BASE_F 850		//前壁 3700
-#define WALL_BASE_L 600//700		//左壁 3200
-#define WALL_BASE_R 600//700		//右壁 3200 600
+#define WALL_BASE_F 500		//前壁 3700
+#define WALL_BASE_L 150 //700		//左壁 3200
+#define WALL_BASE_R 100 //700		//右壁 3200 600
+#define WALL_OFF 100
 
 #define WALL_OFFSET 50
-#define WALL_START 3500
+#define WALL_START 2500
 
-#define CONT_FIX 0.5
-#define CONT0 0.002 				//壁Pゲイン
+#define CONT_FIX 0.1
+#define CONT0 0.0010 				//壁Pゲイン 0.002
 #define CONT1 0.0005				//壁Pゲイン
 #define CONT2 0.00025				//壁Pゲイン
 #define CONT3 0.0001				//壁Pゲイン
@@ -145,18 +150,18 @@
 
 //----制御基準値----
 #define SREF_MIN_L 10		//左制御基準　　下限　0
-#define SREF_HALF_L 200		//左制御　係数変更点　200
-#define SREF_MAX_L 2000		//左制御基準　　上限　1000
+#define SREF_HALF_L 500		//左制御　係数変更点　200
+#define SREF_MAX_L 4000		//左制御基準　　上限　1000
 #define SREF_MIN_R 10		//右制御基準　　下限　0
-#define SREF_HALF_R 200		//右制御　係数変更点　200
-#define SREF_MAX_R 2000		//右制御基準　　上限　1000
+#define SREF_HALF_R 500		//右制御　係数変更点　200
+#define SREF_MAX_R 4000		//右制御基準　　上限　1000
 
 /*------------------------------------------------------------
 		探索系
 ------------------------------------------------------------*/
 //----ゴール座標----
-#define GOAL_X 11	//7
-#define GOAL_Y 6	//7
+#define GOAL_X 8	//7
+#define GOAL_Y 8	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義
@@ -190,8 +195,8 @@
 			unsigned char XCTRL:1;		//予備フラグ(B11)
 			unsigned char WCTRL:1;		//予備フラグ(B12)
 			unsigned char ACTRL:1;		//予備フラグ(B13)
-			unsigned char S7:1;		//予備フラグ(B14)
-			unsigned char S8:1;		//予備フラグ(B15)
+			unsigned char WACCL:1;		//予備フラグ(B14)
+			unsigned char WDECL:1;		//予備フラグ(B15)
 		}FLAG;
 	} mouse_flags;
 #endif
@@ -223,7 +228,7 @@
 	volatile union map_coor PRELOC;		//現在地の座標を格納する共用・構造体
 #else									//対応ファイルでEXTERNが定義されていない場合
 	/*グローバル変数の宣言*/
-	extern union map_coor PRELOC;
+	extern volatile union map_coor PRELOC;
 #endif
 
 #endif /* GLOBAL_H_ */

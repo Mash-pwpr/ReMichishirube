@@ -66,7 +66,6 @@ void val_Init(void){
 	ad_r_off = ad_fr_off = ad_ff_off = ad_fl_off = ad_l_off = 0;
 	base_l = base_r = 0;
 	pulse_sum_l = pulse_sum_r = 0;
-	pulse_pre_l = pulse_pre_r = 0;
 	time = time2 = 0;
 	velR0 = velL0 = 1;
 
@@ -77,6 +76,7 @@ void val_Init(void){
 	t_cnt_r = t_cnt_l = t_cnt_w = 0;
 	kvpR = kvdR = kviR = kvpL = kvdL = kviL = 0;
 	kxpR = kxdR = kxpL = kxdL = 0;
+	section_count = 0;
 	
 	duty_r = duty_l = 0;
 	vpid_R = vpid_L = xpid_R = xpid_L = apid_G = wpid_G = 0;
@@ -86,6 +86,8 @@ void val_Init(void){
 	dif_pre_omega = 0;
 	dif_omega = 0;
 	kwpG = kwdG = 0;
+	gyro_base = 0;
+	pre_omega_G = 0;
 	
 	Cont_kp[0] = CONT0;
 	Cont_kp[1] = CONT1;
@@ -95,8 +97,8 @@ void val_Init(void){
 	
 	cont_r = cont_l = Cont_kp[0];
 	/* 回転速度，計算処理 */
-	accel_omega = 0;
-	max_omega_G = 0;
+	accel_omega = 240;			//rad/s/s
+	max_omega_G = 3.88;			//rad/s
 	angle_G = 0;
 	dif_angle = 0;
 	kapG = kadG = 0;
@@ -106,7 +108,7 @@ void val_Init(void){
 	
 	for(i=0;i<2000;i++){
 		targ_omega[i] = accel_omega * 0.001 * i;
-		
+		//uart_printf("%lf\r\n",targ_omega[i]);
 		if(targ_omega[i] > max_omega_G){
 			targ_vel[i] = max_omega_G;
 			maxindex_w = i;			//最高速度初期化     
@@ -159,4 +161,27 @@ void timer_Init(void){
 	R_PG_Timer_Set_MTU_U0_C3();		//左モータ
 	R_PG_Timer_Set_MTU_U0_C4();		//右モータ
 
+}
+
+void batt_Check(uint16_t num){
+	uint16_t i;
+
+	for(i=0;i<num;i++){
+		S12AD.ADANS0.WORD = 0x40;
+		R_PG_ADC_12_StartConversionSW_S12AD0();					
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		volt_bat += ad_res[6];
+		ms_wait(1);
+	}
+
+	if(volt_bat < 3000 && 1000 < volt_bat){
+		melody(1320,500);
+		melody(1120,500);
+		melody(920,500);
+		R_PG_Timer_StopModule_MTU_U0();
+		R_PG_Timer_StopModule_CMT_U0();
+		uart_printf("Voltage Out! volt is %d\r\n",volt_bat);
+		while(1){
+		}
+	}	
 }

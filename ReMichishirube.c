@@ -27,58 +27,58 @@ int main(void) {
 	//====変数宣言====
 	char mode = 0;
 	uint16_t i,j;
-	//float ttt;
+	float ttt;
 	//====初期化====
 	R_PG_Clock_Set();					//クロック設定
 
 	port_Init();						//portの初期化
-	val_Init();							//各種変数の初期化
 	timer_Init();						//タイマ系の初期化
 	sensor_Init();						//センサ系の初期化
-	uart_Init();					//シリアル通信の初期化
+	uart_Init();						//シリアル通信の初期化
+	val_Init();						//各種変数の初期化
 	map_Init();
 
-
-/*	S12AD.ADANS0.WORD = 0x40;
-	R_PG_ADC_12_StartConversionSW_S12AD0();					
-	R_PG_ADC_12_GetResult_S12AD0(ad_res);
-	volt_bat = ad_res[6];
-	ms_wait(100);
-
-	if(volt_bat < 3000 && 1000 < volt_bat){
-		melody(1320,500);
-		melody(1120,500);
-		melody(920,500);
-		R_PG_Timer_StopModule_MTU_U0();
-		R_PG_Timer_StopModule_CMT_U0();
-		uart_printf("Voltage Out! volt is %d\r\n",volt_bat);
-		while(1){
-		}
-	}
-*/
-		
+	//ttt = GYRO_read();
+	//uart_printf("%lf\r\n",ttt);
+	batt_Check(100);
+	//GYRO_OFFSET(1000);
+	
+	melody(c6h,1000);		
 	set_dir(FORWARD);
 	
 	sensor_start();
 	
-/*	MF.FLAG.CTRL = 0;
-	driveAD(-90);
+	
+/*	while(1){
+	uart_printf("gyro_base : %lfangle_G : %lf, omega_G : %lf, omega_G_rad : %lf\r\n", &gyro_base, &angle_G,&omega_G, &omega_G_rad);
+	ms_wait(1000);
+	}
+	
+	/*宴会芸モード*/
+/*	MF.FLAG.ACTRL = 0;
+	MF.FLAG.VCTRL = 1;
+	MF.FLAG.WCTRL = 1;
+	MF.FLAG.XCTRL = 0;
+
+	MF.FLAG.ACCL = 0;
+	MF.FLAG.DECL = 0;
+	drive_start();
+	while(1);
+*/	
+/*	driveA(450);
+	driveD(450,1);
+	driveX(0);
+*/
+	turn_L90();
+//	driveD(0,1);
+/*	turn_SLA_R90();
 	melody(1120,1000);
 	
 	get_base();
 	ms_wait(100);
 	//drive_start();
 	
-/*	half_sectionA2();
-	half_sectionA();
-	
-	half_sectionA2();
-	half_sectionA();
-
-	half_sectionA2();
-	half_sectionD();
 */
-
 	drive_stop(1);
 	sensor_stop();
 /*	melody(1320,300);
@@ -96,17 +96,15 @@ int main(void) {
 		//----選択項目の実行----
 		switch(mode){
 		case 0:	//----基準値を取る----
-			//get_base();											//get_base()はsensor.cに関数定義あり 　制御のための壁基準値取得
-			//----情報をシリアル送信----
-			//uart_printf("base_l = %3d, ", base_l);				//UART_printf()はuart.cに関数定義あり
-			//uart_printf("base_r = %3d\r", base_r);
 			
+			//----情報をシリアル送信----
 			ms_wait(500);
 			uart_printf("START\r\n");
 			uart_printf("base:%d, %d\r\n", base_r, base_l);
-			uart_printf("duty_r\tduty_l\tsenR\tsenL\tdif\r\n");
+			offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
+			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
 			for(i=0;i<2000;i++){
-				uart_printf("%lf, %lf,%lf, %lf\r\n",test_valR[i],test_valL[i],test_valR1[i],test_valL1[i]);//test_valR2[i],test_valL2[i]);
+				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",test_valR[i],test_valL[i],test_valR1[i],test_valL1[i],test_valR2[i],test_valL2[i]);
 				ms_wait(1);
 			}
 			uart_printf("ALL\r\n");
@@ -150,17 +148,62 @@ int main(void) {
 			/////////////////////////////////　　↓の二次探索走行とスラローム走行は未実装
 			//----二次高速走行----
 		case 3:
-		
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
 			
+			start_wait();
+			start_ready();
+			
+			searchSA_ESNW();
+			goal_x = goal_y = 0;
+			searchSA_ESNW();
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
+
+			turn_180();									//180度回転
+			turn_dir(DIR_TURN_180);
 			break;
 
 			//----スラローム走行----
 		case 4:
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
+			
+			start_wait();
+			start_ready();
+			
+			searchSLA();
+			goal_x = goal_y = 0;
+			searchSLA();
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
+
+			turn_180();									//180度回転
+			turn_dir(DIR_TURN_180);
+
 			break;
 			//////////////////////////////////
 
-			//----走行テスト----
 		case 5:
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
+			
+			start_wait();
+			start_ready();
+			
+			searchSLA_ESNW();
+			goal_x = goal_y = 0;
+			searchSLA_ESNW();
+			goal_x = GOAL_X;
+			goal_y = GOAL_Y;
+
+			turn_180();									//180度回転
+			turn_dir(DIR_TURN_180);
+			break;
+
+			
+			//----走行テスト----
+		case 11:
 			Wait;
 			start_wait();
 			set_dir(FORWARD);
@@ -172,14 +215,14 @@ int main(void) {
 			ms_wait(100);
 			break;
 			//----エンコーダテスト----
-		case 6:
+		case 12:
 			Wait;
 			start_wait();
 			enc_test();
 			ms_wait(100);
 			break;
 		
-		case 7:
+		case 13:
 			Wait;
 			start_wait();
 			MF.FLAG.ACTRL = 1;

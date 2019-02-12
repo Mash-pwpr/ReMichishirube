@@ -107,15 +107,17 @@ float GYRO_read(void){
 	int16_t gyro_z;
 	float omega;
 	gyro_z = (int16_t)(SPI_read_byte(0x47) << 8 | SPI_read_byte(0x48));	//0x47が上位，0x48が下位の16bitデータでジャイロ値を取得
-	omega = (float)(gyro_z / GYRO_FIX);
+	omega = (float)((gyro_z - gyro_base) / GYRO_FIX);
 	return omega;
 }
 
 void GYRO_OFFSET(uint16_t num){
-	/*float gyro_offset = 0;
+	float gyro_offset = 0;
 	int i;
 	
 	for(i=0;i<num;i++){
-		gyro_offset += (GYRO_read()
-*/
+		gyro_offset += GYRO_read();
+		ms_wait(1);
+	}
+	gyro_base = gyro_offset / num;
 }

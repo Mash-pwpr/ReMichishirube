@@ -1,4 +1,4 @@
-Renesas Optimizing Linker (W2.08.00 )             20-Oct-2018 19:31:38
+Renesas Optimizing Linker (W2.08.00 )             08-Feb-2019 16:33:01
 
 *** Options ***
 
@@ -60,21 +60,21 @@ W0561100:Cannot find "PIntPRG" specified in option "start"
 
 SECTION                            START      END         SIZE   ALIGN
 B_1
-                                  00000004  00000326       323   1
+                                  00000004  00000328       325   1
 R_1
-                                  00000327  00000377        51   1
+                                  00000329  00000379        51   1
 B_2
-                                  00000378  000003e7        70   2
+                                  0000037a  000003e5        6c   2
 R_2
-                                  000003e8  00000401        1a   2
+                                  000003e6  000003ff        1a   2
 B
-                                  00000404  0000e8b7      e4b4   4
+                                  00000400  0000e8c3      e4c4   4
 R
-                                  0000e8b8  0000ec57       3a0   4
+                                  0000e8c4  0000ec63       3a0   4
 SU
-                                  0000ec58  0000ed57       100   4
+                                  0000ec64  0000ed63       100   4
 SI
-                                  0000ed58  0000f057       300   4
+                                  0000ed64  0000f063       300   4
 PResetPRG
                                   fff80000  fff80030        31   1
 C_1
@@ -100,15 +100,15 @@ D_2
 D
                                   fff80ac0  fff80e5f       3a0   4
 P
-                                  fff80e60  fff911b2     10353   1
+                                  fff80e60  fff91c8a     10e2b   1
 W_1
-                                  fff911b3  fff911c3        11   1
+                                  fff91c8b  fff91c9b        11   1
 W_2
-                                  fff911c4  fff911d5        12   2
+                                  fff91c9c  fff91cad        12   2
 W
-                                  fff911d8  fff911d8         0   4
+                                  fff91cb0  fff91cb0         0   4
 L
-                                  fff911d8  fff91448       271   4
+                                  fff91cb0  fff91f40       291   4
 $ADDR_C_FFFFFF80
                                   ffffff80  ffffff83         4   1
 FIXEDVECT

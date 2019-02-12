@@ -64,8 +64,8 @@ void half_sectionA2()
 void half_sectionD()
 {
 	MF.FLAG.CTRL = 0;										
-	driveX(HALF_MM + 5);
-	//driveD(HALF_MM,1);									//半区画のパルス分減速しながら走行。走行後は停止する													
+	driveD(HALF_MM,1);									//
+	driveX(HALF_MM);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
@@ -105,19 +105,28 @@ void a_sectionU() {
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //DC用に改造
-/*void turn_R90(){
-	MF.FLAG.CTRL = 0;									//制御を無効にする
-	set_dir(TURN_R);									//右に回転するようモータの回転方向を設定
-	driveC(ROT_TIME, 1);									//低速で指定パルス分回転。回転後に停止する
-	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
-}*/
+
 void turn_R90(){
 	MF.FLAG.CTRL = 0;								//制御を無効にする
-	set_dir(FORWARD);								//右に回転するようモータの回転方向を設定
-	driveAD(ROT_ANGLE_R90);								//低速で指定パルス分回転。回転後に停止する
+	set_dir(TURN_R);								//右に回転するようモータの回転方向を設定
+	driveAD(ROT_ANGLE_R90);								//超信地するわよぉ！
 	set_dir(FORWARD);								//前進するようにモータの回転方向を設定
 }
 
+void turn_SLA_R90(){
+	MF.FLAG.CTRL = 1;
+	set_dir(FORWARD);								//右に回転するようモータの回転方向を設定
+	driveA(SLA_OFFSET_B);
+	
+	MF.FLAG.CTRL = 0;
+	driveW(-90);								//低速で指定パルス分回転。回転後に停止する
+	
+	MF.FLAG.CTRL = 1;
+	driveA(SLA_OFFSET_A);
+	
+	get_wall_info();
+	
+}
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //turn_L90
@@ -127,13 +136,32 @@ void turn_R90(){
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void turn_L90()
 {
-	MF.FLAG.CTRL = 0;										//制御を無効にする
-	set_dir(TURN_L);										//左に回転するようモータの回転方向を設定
-	driveAD(ROT_ANGLE_L90);									//定速で指定パルス分回転。回転後に停止する
-	//driveC(ROT_TIME, 1);									//定速で指定時間回転。回転後に停止する
-	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
+	MF.FLAG.CTRL = 0;									
+	set_dir(TURN_L);									//左に超信地旋回する向きに設定
+	driveAD(ROT_ANGLE_L90);									//超信地面するわよぉ！
+	set_dir(FORWARD);									//前進するようにモータの回転方向を設定
 }
 
+//+++++++++++++++++++++++++++++++++++++++++++++++
+//turn_SLA_L90	試作中
+//	左にslalom90度回転する
+// 引数：なし
+// 戻り値：なし
+//+++++++++++++++++++++++++++++++++++++++++++++++
+void turn_SLA_L90(){
+	MF.FLAG.CTRL = 1;
+	set_dir(FORWARD);							
+	driveA(SLA_OFFSET_B);							//offset　before区間走行
+	
+	MF.FLAG.CTRL = 0;
+	driveW(90);								//90までスラローム旋回
+	
+	MF.FLAG.CTRL = 1;
+	driveA(SLA_OFFSET_A);							//offset　after区間
+	
+	get_wall_info();
+	
+}
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //turn_180
@@ -146,7 +174,8 @@ void turn_180()
 	MF.FLAG.CTRL = 0;										//制御を無効にする
 	set_dir(TURN_R);										//左に回転するようモータの回転方向を設定
 	//driveC(ROT180_TIME, 1);									//定速で指定パルス分回転。回転後に停止する										//完全に停止するまで待機
-	driveAD(ROT_ANGLE_180);
+	driveAD(ROT_ANGLE_R90);
+	driveAD(ROT_ANGLE_R90);
 	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
 }
 
@@ -174,9 +203,8 @@ void set_position()
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //driveA
-//	指定パルス分加速走行する
-// 引数1：dist・・・走行するパルス
-// 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
+//	指定距離分加速走行する
+// 引数1：dist・・・走行する距離mm
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //DC用に改造しているdriveA,距離はオッケー
@@ -184,9 +212,9 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x00 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
-	MF.FLAG.ACTRL = 1;
+	MF.FLAG.ACTRL = 0;
 	MF.FLAG.VCTRL = 1;
-	MF.FLAG.WCTRL = 0;
+	MF.FLAG.WCTRL = 1;
 	MF.FLAG.XCTRL = 0;
 	
 	
@@ -203,6 +231,7 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 	while(totalG_mm < dist){
 		//uart_printf("%lf, %lf, %d, %d\r\n",totalR_mm,totalL_mm, t_cnt_r,t_cnt_l);		
 	}
+	kviR = kviL = 0;
 	
 	
 }
@@ -211,18 +240,20 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //driveD
 //	指定パルス分減速走行して停止する
-// 引数1：dist・・・走行するパルス
+// 引数1：dist・・・走行する距離
 // 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
 
 
 void driveD(uint16_t dist, unsigned char rs) {
+	float ics = totalG_mm;
+
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x00 | (MF.FLAGS & 0x0F);					//加速・減速・定速・ストップフラグを0にする
 	MF.FLAG.ACTRL = 0;
-	MF.FLAG.WCTRL = 0;
+	MF.FLAG.WCTRL = 1;
 	MF.FLAG.XCTRL = 0;
 	MF.FLAG.VCTRL = 1;
 	
@@ -230,30 +261,35 @@ void driveD(uint16_t dist, unsigned char rs) {
 	MF.FLAG.DECL = 0;
 	
 	
-	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	//totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
 	drive_start();											//痩躯開始
 	offsetG_mm = rs * 0.5 * max_vel_G *maxindex;
-	offsetG_mm -= STOP_OFF_MM;
+	//offsetG_mm -= STOP_OFF_MM;
 	
 	//----走行----
-	while((totalG_mm + offsetG_mm) < dist){
-		//uart_printf("%lf, %lf, %d, %d\r\n",totalR_mm,totalL_mm, t_cnt_r,t_cnt_l);		
+	while((totalG_mm + offsetG_mm) < ((float)dist + ics)){	
+		
 	}
+/*	uart_printf("distance is %f\r\n",totalG_mm);
+	uart_printf("offset is %f\r\n",offsetG_mm);
+	uart_printf("target is %f\r\n",(float)dist + ics);
+*/	
+	
 	if(rs){
-		MF.FLAG.DECL = 0;
+		MF.FLAG.ACCL = 0;
 		MF.FLAG.DECL = 1;										//減速フラグを1に
-		while(totalG_mm < dist){
-/*			if(time > 500){
+		while(totalG_mm < (dist + ics)){
+			if(time > 500){
 				break;
 			}
-*/		
+			//while(1);
 		}
-		ms_wait(1000);		
+				
 	}
-	
-	//----停止措置----
+	uart_printf("Finish is %f\r\n",totalG_mm);
+/*	//----停止措置----
 	drive_stop(rs);											//走行終了、停止許可があれば停止
-	t_cnt_r = t_cnt_l = 0;
+*/	t_cnt_r = t_cnt_l = 0;
 	
 }
 
@@ -267,34 +303,54 @@ void driveD(uint16_t dist, unsigned char rs) {
 //DC用に改造，目的は超信地のみ 引数1:
 void driveAD(float deg)
 {
+	float angle_offset;
+	
+	if(deg > 0){
+		W_dir = 1;
+	}else if(deg < 0){
+		W_dir = -1;	
+	}
+	
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x10 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
-	MF.FLAG.ACTRL = 1;
+	MF.FLAG.ACTRL = 0;
 	MF.FLAG.VCTRL = 0;
-	MF.FLAG.WCTRL = 0;
+	MF.FLAG.WCTRL = 1;
 	MF.FLAG.XCTRL = 1;
 	
+	MF.FLAG.WACCL = 1;
+	MF.FLAG.WDECL = 0;
 	MF.FLAG.ACCL = 0;
 	MF.FLAG.DECL = 0;
 
 	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
-	targ_angle = deg;
+	angle_offset = (0.5 * maxindex_w * max_omega_G * 0.001) * KWP ;
 	targ_total_mm = 0;
 	drive_start();								//走行開始
 	
-	ms_wait(800);	
-	//----走行----
-	/*while((totalL_mm - offsetL_mm) < dist){
-			offsetL_mm = rs * 0.5 * max_vel_G * off_dt;		//v-tグラフにおける速度減少部の面積　⇒　減少に必要な距離
-	}*/	
-/*	if(rs){
-		MF.FLAG.CTRL = 0;
-		velR0 = velL0 = 0;
-		ms_wait(100);			//速度がゼロに収束するまで待つ
-		t_cnt_r = t_cnt_l = 0;
+	if(deg > 0){
+		//----走行----
+		while(angle_G < deg - angle_offset);				//w-tグラフにおける速度増加部の面積　⇒　現在の回転角度
+		MF.FLAG.WACCL = 0;
+		MF.FLAG.WDECL = 1;
+		while(angle_G < deg) {
+			if(targ_omega[t_cnt_w] == 0){
+				break;
+			}
+		}
+	}else if (deg < 0){
+		while(angle_G > deg + angle_offset);
+		MF.FLAG.WACCL = 0;
+		MF.FLAG.WDECL = 1;
+		while(angle_G > deg) {
+			if(targ_omega[t_cnt_w] == 0){
+				break;
+			}
+		}
 	}
-*/
+	
+	
 	//----停止許可があれば停止----
 	drive_stop(1);	
 	angle_G = 0;
@@ -315,17 +371,20 @@ void driveX(uint16_t dist){
 	MF.FLAG.WCTRL = 0;
 	MF.FLAG.XCTRL = 1;
 	
+	MF.FLAG.CTRL = 0;
+	
 	MF.FLAG.ACCL = 0;
 	MF.FLAG.DECL = 0;
 
 	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
 	targ_angle = 0;
+	t_cnt_w = 0;
 	angle_G = 0;
 	targ_total_mm = dist;
 	
 	drive_start();								//走行開始
 	
-	ms_wait(1000);	
+	ms_wait(100);	
 	//----走行----
 	
 	//----停止許可があれば停止----
@@ -357,7 +416,7 @@ void driveU(uint16_t dist, unsigned char rs)
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //driveC
-//	指定パルス分定速走行して停止する
+//	指定時間分加速走行する
 // 引数1：dist・・・走行するパルス
 // 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
 // 戻り値：なし
@@ -385,7 +444,51 @@ void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可�
 	}
 	//----停止許可があれば停止----
 	drive_stop(rs);											//走行終了、停止許可があれば停止
+}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++
+//driveW
+//	角速度制御走行
+// 引数1：theta・・・目標角度
+// 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
+// 戻り値：なし
+//+++++++++++++++++++++++++++++++++++++++++++++++
+void driveW(int16_t dist)			//引数　時間　停止許可　＊時間制限でモータ回せる関数
+{
+	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	angle_G = 0;
+	t_cnt_w = 0;
+	//====回転開始====
+	MF.FLAG.VCTRL = 1;
+	MF.FLAG.ACTRL = 0;
+	MF.FLAG.XCTRL = 0;
+	MF.FLAG.WCTRL = 1;
 	
+	if(dist > 0){
+		W_dir = 1;
+	}else if(dist < 0){
+		W_dir = -1;	
+	}
+	
+	MF.FLAG.ACCL = 1;
+	MF.FLAG.DECL = 0;
+	drive_start();				//走行開始
+	
+	//offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
+	//offsetA = offsetA - (STOP_OFF * W_dir);
+	offsetA = STOP_OFF * W_dir;
+	//====回転====
+	if(W_dir == 1){
+		while(angle_G + offsetA < dist);
+	} else if(W_dir == -1){
+		while(angle_G - offsetA > dist);
+	}
+/*	MF.FLAG.DECL = 1;
+	MF.FLAG.ACCL = 0;
+	while(angle_G < dist)
+*/
+	
+	W_dir = 0;	
 
 }
 
@@ -432,7 +535,7 @@ void set_dir(unsigned char d_dir)
 	switch(d_dir & 0x0f){									//0~3ビット目を取り出す
 		//----正回転----
 		case 0x00:									
-			MF.FLAG.L_DIR = 1;						//左を前進方向に設定
+			MF.FLAG.L_DIR = 1;				//左を前進方向に設定
 			velL0 = 1;
 			break;
 		//----逆回転----

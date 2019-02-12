@@ -56,12 +56,19 @@
 	//====探索系====
 	void searchA();											//一区画停止型探索走行
 	void searchSA();										//連続探索走行
+	void searchSA_ESNW();
+	
+	void searchSLA();
+	void searchSLA_ESNW();
+	
 	void adv_pos();											//マウスの位置情報を前進
-	void conf_route();										//次ルートの確認
+	void conf_route_NESW();										//次ルートの確認
+	void conf_route_ESNW();	
 	void map_Init();										//マップデータ初期化
 	void write_map();										//マップ書き込み
 	void turn_dir(unsigned char);									//自機方向情報変更
 	void make_smap();										//歩数マップ作成
-	void make_route();										//最短経路検索
-
+	void make_route_NESW();										//最短経路検索
+	void make_route_ESNW();
+	
 #endif /* SEARCH_H_ */

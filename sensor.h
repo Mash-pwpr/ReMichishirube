@@ -44,7 +44,8 @@
 		volatile uint16_t volt_bat;									//電源電圧監視
 		volatile float cont_r,cont_l;										//壁制御の比例定数
 		volatile float Cont_kp[5];									//壁制御の場合分け
-		volatile float omega_G, angle_G,omega_G_rad;
+		volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
+		volatile float gyro_base;
 	#else
 		//----発光LEDポート----
 		extern uint16_t VLED_R;
@@ -60,10 +61,11 @@
 		extern volatile uint16_t base_l, base_r;
 		extern volatile int16_t dif_l, dif_r;
 		extern volatile uint16_t volt_bat;
-		extern volatile float omega_G, angle_G,omega_G_rad;
+		extern volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
 		
 		extern volatile float cont_r,cont_l;										
 		extern volatile float Cont_kp[5];
+		extern volatile float gyro_base;
 
 	#endif
 

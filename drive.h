@@ -46,6 +46,7 @@
 	volatile float vel_R, vel_L,vel_G,xR, xL,xG;			//現在速度，距離変化
 	volatile float targ_vel[2000],max_vel_G;			//目標速度
 	volatile float targ_total_mm;					//制止するための目標距離
+	volatile uint8_t section_count;
 	
 	/***速度のPID計算用***/
 	volatile float dif_vel_R,dif_vel_L;				//速度偏差
@@ -64,8 +65,9 @@
 	volatile float targ_omega[2000],max_omega_G,accel_omega;
 	volatile float dif_omega;
 	volatile float dif_pre_omega;
-	volatile float kwpG,kwdG;
+	volatile float kwpG,kwdG,kwiG;
 	volatile float wpid_G;
+	volatile int8_t W_dir;
 	
 	/*** 角度のPID計算 ***/
 	volatile float targ_angle;
@@ -75,32 +77,31 @@
 	
 	
 	volatile uint16_t t_cnt_l, t_cnt_r,t_cnt_w;
-	volatile uint16_t time,time2, ms_time;		//テーブルカウンタ
-	volatile uint16_t minindex, maxindex,maxindex_w;				//最低速度・最大速度
+	volatile uint16_t time,time2, ms_time;				//テーブルカウンタ
+	volatile uint16_t minindex, maxindex,maxindex_w;		//最低速度・最大速度・最大角速度？
 	volatile uint16_t interval_l, interval_r;			//左右インターバル
 	
 	volatile float duty_r,duty_l,duty_oR,duty_oL;			//Duty比計算と計算オーバー用のバッファ
 	volatile float Kvolt,Kxr;					//加速度計算するための電流定数，距離変換のための定数
-	volatile float accel;					//目標加速度？
+	volatile float accel;						//目標加速度？
 	
 	volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000],test_valR2[1000],test_valL2[1000];			//速度ログなどの保存用配列
-	//volatile float test_valR2[1000],test_valL2[1000]; 	//エンコーダ獲得値などの保存用配列
 	
-	
-	volatile uint16_t pulse_l, pulse_r, pulse_pre_r, pulse_pre_l;					//左右パルスカウント
+	volatile uint16_t pulse_l, pulse_r;								//左右パルスカウント
 	volatile int32_t dif_pulse_r, dif_pulse_l,pulse_sum_l, pulse_sum_r;				//エンコーダ変化値，オバフ用フラグ
 	volatile float totalR_mm, totalL_mm,totalG_mm;							//左，右，重心走行距離[mm]
-	volatile float offsetR_mm, offsetL_mm,offsetG_mm;								//停止に必要なオフセット距離
-	volatile float sen_dl, sen_dr;										//壁センサによる比例制御量
+	volatile float offsetR_mm, offsetL_mm, offsetG_mm, offsetA;					//停止に必要なオフセット距離
+	volatile float sen_dl, sen_dr;									//壁センサによる比例制御量
 	
 	
 #else									//対応ファイルでEXTERNが定義されていない場合
 	/*グローバル変数の宣言*/
 	extern const uint16_t table[];				
 	extern volatile float dif_pre_vel_R, dif_pre_vel_L;
-	extern volatile float vel_R,vel_L,vel_G,xR, xL,xG;		//両輪速度
-	extern volatile float targ_vel[2000],max_vel_G;	        //目標速度
+	extern volatile float vel_R,vel_L,vel_G,xR, xL,xG;		 //両輪速度
+	extern volatile float targ_vel[2000],max_vel_G;	       		 //目標速度
 	extern volatile float targ_total_mm;
+	extern volatile uint8_t section_count;
 	
 	/***速度のPID計算用***/
 	extern volatile float dif_vel_R, dif_vel_L;
@@ -118,8 +119,9 @@
 	extern volatile float targ_omega[2000],max_omega_G,accel_omega;
 	extern volatile float dif_omega;
 	extern volatile float dif_pre_omega;
-	extern volatile float kwpG,kwdG;
+	extern volatile float kwpG,kwdG,kwiG;
 	extern volatile float wpid_G;
+	extern volatile int8_t W_dir;
 	
 	/*** 角度のPID計算 ***/
 	extern volatile float targ_angle;
@@ -138,10 +140,10 @@
 	
 	extern volatile float test_valR[2000],test_valL[2000],test_valR1[2000],test_valL1[2000],test_valR2[1000],test_valL2[1000];
 	
-	extern volatile uint16_t pulse_l, pulse_r,pulse_pre_r, pulse_pre_l;		
+	extern volatile uint16_t pulse_l, pulse_r;		
 	extern volatile int32_t dif_pulse_r, dif_pulse_l,pulse_sum_l, pulse_sum_r;
 	extern volatile float totalR_mm, totalL_mm,totalG_mm;
-	extern volatile float offsetR_mm, offsetL_mm,offsetG_mm;
+	extern volatile float offsetR_mm, offsetL_mm,offsetG_mm,offsetA;
 	extern volatile float sen_dl, sen_dr;					
 	
 	
@@ -158,6 +160,7 @@
 	void driveU(uint16_t, unsigned char);	//使ってない
 	void driveC(uint16_t, unsigned char);	//定時間走行，セッポジぐらいしか使ってない
 	void driveX(uint16_t);			//位置・角度制御走行
+	void driveW(int16_t);			//角速度制御走行
 	
 	void set_dir(unsigned char);		//進む方向の設定
 
@@ -175,6 +178,9 @@
 	void turn_L90();		//左90回転
 	void turn_180();		//180度回転
 	void set_position();		//位置合わせ
+	
+	void turn_SLA_R90();
+	void turn_SLA_L90();
 
 	//----走行試験----
 	void test_drive(char *mode);	//走行試験

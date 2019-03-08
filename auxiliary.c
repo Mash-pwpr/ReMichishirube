@@ -187,16 +187,8 @@ void start_wait(){
 
 void start_ready(void){
 
-
 	sensor_start();
-/*	turn_R90();
-	ms_wait(100);
-	set_position();
-	ms_wait(200);
 	
-	turn_L90();
-	ms_wait(100);
-*/	
 	MF.FLAG.CTRL = 0;										//制御を無効にする
 	set_dir(BACK);											//後退するようモータの回転方向を設定
 	driveC(1000, 1);								//尻を当てる程度に後退。回転後に停止する
@@ -206,9 +198,22 @@ void start_ready(void){
 	GYRO_OFFSET(1000);
 	
 	melody(c6,1000);
-/*	driveC(CENTER_TIME, 1);									//定速で指定パルス分回転。回転後に停止する
-  	Wait;
-*/
 	driveA(SET_MM);
+}
 
+void setting_params(params instance){
+	params_now.vel_max = instance.vel_max;
+	params_now.accel = instance.accel;
+	params_now.omega_max = instance.omega_max;
+	params_now.omega_accel = instance.omega_accel;
+}
+
+void setting_gain(gain instance){
+	gain_now.vel_kpR = instance.vel_kpR;
+	gain_now.vel_kiR = instance.vel_kiR;
+	gain_now.vel_kpL = instance.vel_kpL;
+	gain_now.vel_kiL = instance.vel_kiL;
+	gain_now.omega_kp = instance.omega_kp;
+	gain_now.omega_ki = instance.omega_ki;
+	gain_now.wall_kp = instance.wall_kp;
 }

@@ -129,8 +129,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 		switch(route[r_cnt++]){								//route配列によって進行を決定。経路カウンタを進める
 			//----前進----
 			case 0x88:
-				s_section();                                //このプログラムには無い関数、他のプログラムと比べて類似の関数を探してピッタリなのを作れ　標
-				section_count++;
+				s_section();
 				break;
 			//----右折----
 			case 0x44:
@@ -146,8 +145,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
-				half_sectionA();			//ここで実は一文だけ抜けています、がんばって　標
+				half_sectionA();
 				break;
 			//----180回転----
 			case 0x22:
@@ -164,7 +162,6 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
 				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
 				break;
 			//----左折----
@@ -181,7 +178,6 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
 				half_sectionA();			//想定通り、ここでも何か抜けてます、がんばって  標
 				break;
 		}
@@ -229,8 +225,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 		switch(route[r_cnt++]){								//route配列によって進行を決定。経路カウンタを進める
 			//----前進----
 			case 0x88:
-				s_section();                                //このプログラムには無い関数、他のプログラムと比べて類似の関数を探してピッタリなのを作れ　標
-				section_count++;
+				s_section();
 				break;
 			//----右折----
 			case 0x44:
@@ -246,8 +241,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
-				half_sectionA();			//ここで実は一文だけ抜けています、がんばって　標
+				half_sectionA();
 				break;
 			//----180回転----
 			case 0x22:
@@ -264,8 +258,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
-				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
+				half_sectionA();
 				break;
 			//----左折----
 			case 0x11:
@@ -281,11 +274,9 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				section_count = 0;
-				half_sectionA();			//想定通り、ここでも何か抜けてます、がんばって  標
+				half_sectionA();
 				break;
 		}
-		//uart_printf("x:%d, y:%d\r\n",PRELOC.AXIS.X,PRELOC.AXIS.Y);
 		adv_pos();
 		conf_route_ESNW();
 

@@ -43,11 +43,15 @@ int main(void) {
 	batt_Check(100);
 	//GYRO_OFFSET(1000);
 	
-	melody(c6h,1000);		
+//	melody(c6h,1000);		
 	set_dir(FORWARD);
 	
-	sensor_start();
 	
+	
+/*	start_wait();
+	GYRO_OFFSET(1000);
+*/	
+	sensor_start();
 	
 /*	while(1){
 	uart_printf("gyro_base : %lfangle_G : %lf, omega_G : %lf, omega_G_rad : %lf\r\n", &gyro_base, &angle_G,&omega_G, &omega_G_rad);
@@ -65,21 +69,23 @@ int main(void) {
 	drive_start();
 	while(1);
 */	
-/*	driveA(450);
-	driveD(450,1);
-	driveX(0);
-*/
-	turn_L90();
+//	MF.FLAG.CTRL = 1;
+	driveA(180);
+	driveD(180,1);
+	//driveX(0);
+
+//	turn_R90();
 //	driveD(0,1);
-/*	turn_SLA_R90();
-	melody(1120,1000);
-	
+//	driveA(145);
+//	turn_SLA_R90();
+//	turn_SLA_L90();
+/*	
 	get_base();
 	ms_wait(100);
 	//drive_start();
 	
 */
-	drive_stop(1);
+	//ms_wait(100);
 	sensor_stop();
 /*	melody(1320,300);
 	melody(1397,300);
@@ -100,16 +106,17 @@ int main(void) {
 			//----情報をシリアル送信----
 			ms_wait(500);
 			uart_printf("START\r\n");
+			
 			uart_printf("base:%d, %d\r\n", base_r, base_l);
-			offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
+			//offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
 			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
-			for(i=0;i<2000;i++){
+			for(i=0;i<1000;i++){
 				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",test_valR[i],test_valL[i],test_valR1[i],test_valL1[i],test_valR2[i],test_valL2[i]);
 				ms_wait(1);
 			}
 			uart_printf("ALL\r\n");
-
 			break;
+			
 		case 1:	//----一次探索走行----
 			goal_x = GOAL_X;									//ゴール座標を設定　　GOAL_Xはglobal.hにマクロ定義あり
 			goal_y = GOAL_Y;									//ゴール座標を設定　　GOAL_Yはglobal.hにマクロ定義あり

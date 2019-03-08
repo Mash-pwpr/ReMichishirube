@@ -51,11 +51,6 @@
 
 	#define PIN_DIR(pin, dir)	PIN_SET(pin, dir)									//対応ピンの入出力を設定
 
-/*	#define PIN_IS_SET(pin)		bit_is_set(LPC_GPIO[pin>>4]->DATA, pin&0x0f)		//対応ピンの入力がHighか判定
-	#define PIN_IS_CLEAR(pin)	bit_is_clear(LPC_GPIO[pin>>4]->DATA, pin&0x0f)		//対応ピンの入力がLowか判定
-	#define PIN_STAT(pin)		PIN_IS_SET(pin)										//対応ピンの入力を返す
-*/
-
 	/*関数のプロトタイプ宣言*/
 	void pin_write(uint16_t pin, unsigned char dat);
 	void pins_write(uint16_t pin[], unsigned char dat, unsigned char cnt);

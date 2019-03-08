@@ -65,9 +65,9 @@ void val_Init(void){
 	ad_l = ad_r = ad_ff = ad_fr = ad_fl = 0;
 	ad_r_off = ad_fr_off = ad_ff_off = ad_fl_off = ad_l_off = 0;
 	base_l = base_r = 0;
-	pulse_sum_l = pulse_sum_r = 0;
+	pulse_flag_l = pulse_flag_r = 0;
 	time = time2 = 0;
-	velR0 = velL0 = 1;
+	vel_direction_R = vel_direction_L = 1;	//モータの回転方向とりあえず1で旋回にしておく
 
 	//足回り系？
 	totalR_mm = totalL_mm = totalG_mm = 0;
@@ -76,41 +76,59 @@ void val_Init(void){
 	t_cnt_r = t_cnt_l = t_cnt_w = 0;
 	kvpR = kvdR = kviR = kvpL = kvdL = kviL = 0;
 	kxpR = kxdR = kxpL = kxdL = 0;
-	section_count = 0;
-	
+	vel_omega = 0;
+	duty_fix_gain_R = 1.0;
+	duty_fix_gain_L = 1.0;
 	duty_r = duty_l = 0;
 	vpid_R = vpid_L = xpid_R = xpid_L = apid_G = wpid_G = 0;
 	
+	params_search1.vel_max = 0.35;			//単位はm/s, mm/ms
+	params_search1.accel = 1.5;			//単位はm/s/s			
+	params_search1.omega_max = 6.0;			//単位はrad/s
+	params_search1.omega_accel = 25.0;		//単位はrad/s/s
+		
+	gain_search1.vel_kpR = 3.50f;
+	gain_search1.vel_kpL = 3.50f;
+	gain_search1.vel_kiR = 0.0f;
+	gain_search1.vel_kiL = 0.0f;
+	gain_search1.omega_kp = 0.80f;
+	gain_search1.omega_ki = 0.150f;
+	gain_search1.wall_kp = 0.001;
+	
+	setting_params(params_search1);
+	setting_gain(gain_search1);
+	
 	//ジャイロ系
-	omega_G = angle_G;
+	omega_G = angle_G = 0;
 	dif_pre_omega = 0;
 	dif_omega = 0;
 	kwpG = kwdG = 0;
 	gyro_base = 0;
 	pre_omega_G = 0;
 	
-	Cont_kp[0] = CONT0;
+/*	Cont_kp[0] = CONT0;
 	Cont_kp[1] = CONT1;
 	Cont_kp[2] = CONT2;
 	Cont_kp[3] = CONT3;
 	Cont_kp[4] = CONT4;
 	
 	cont_r = cont_l = Cont_kp[0];
+*/	
 	/* 回転速度，計算処理 */
-	accel_omega = 240;			//rad/s/s
-	max_omega_G = 3.88;			//rad/s
+//	accel_omega = 200;			//rad/s/s
+//	max_omega_G = 8.0;			//rad/s
 	angle_G = 0;
 	dif_angle = 0;
 	kapG = kadG = 0;
 	apid_G  = 0;
 	dif_pre_angle = 0;
-	
-	
+		
 	for(i=0;i<2000;i++){
-		targ_omega[i] = accel_omega * 0.001 * i;
-		//uart_printf("%lf\r\n",targ_omega[i]);
-		if(targ_omega[i] > max_omega_G){
-			targ_vel[i] = max_omega_G;
+		//targ_omega[i] = accel_omega * 0.001 * i;
+		targ_omega[i] = params_now.omega_accel * 0.001 * i;
+		//uart_printf("%d---%f\r\n",i,targ_omega[i]);
+		if(targ_omega[i] > params_now.omega_max){
+			targ_omega[i] = params_now.omega_max;
 			maxindex_w = i;			//最高速度初期化     
 			minindex = MINSPEED_S;		//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
 			break;
@@ -118,22 +136,21 @@ void val_Init(void){
 	}
 	
 	/* 並進速度，計算処理  */
-	accel = 1.0;
-	max_vel_G = 0.35;
+//	accel = 1.0;
+//	max_vel_G = 0.35;
 	
 	for(i=0;i<2000;i++){
-		targ_vel[i] = accel * 0.001 * i;
+		targ_vel[i] = params_now.accel * 0.001 * i;
 		
-		if(targ_vel[i] > max_vel_G){
-			targ_vel[i] = max_vel_G;
+		if(targ_vel[i] > params_now.vel_max){
+			targ_vel[i] = params_now.vel_max;
 			maxindex = i;			//最高速度初期化     
 			minindex = MINSPEED_S;		//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
 			break;
 		}
 	}
 	//----走行系----
-/*	maxindex = MAXSPEED_S;			//最高速度初期化     MAXSPEED_Sはglobal.hにマクロ定義あり
-*/	minindex = MINSPEED_S;			//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
+	minindex = MINSPEED_S;			//最低速度初期化     MINSPEED_Sはglobal.hにマクロ定義あり
 	MF.FLAGS = 0x80;			//フラグクリア＆停止状態  0x80=0b10000000
 
 	//----探索系----
@@ -146,6 +163,15 @@ void val_Init(void){
 	Kvolt = MASS / 2 * DIA_SQUR_mm / DIA_PINI_mm * DIA_WHEEL_mm / Ktolk * Rmotor;
 	Kxr =  -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi / 4096;
 	
+	//---テスト用配列格納
+	for(i=0;i<1000;i++){
+		test_valR[i] = 0;
+		test_valL[i] = 0;
+		test_valR1[i] = 0;
+		test_valL1[i] = 0;
+		test_valR2[i] = 0;
+		test_valL2[i] = 0;
+	}	
 }
 
 // タイマ初期化

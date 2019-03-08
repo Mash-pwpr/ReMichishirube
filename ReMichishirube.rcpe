@@ -25,7 +25,6 @@
       <Path>port.h</Path>
       <Path>search.h</Path>
       <Path>sensor.h</Path>
-      <Path>table.h</Path>
       <Path>uart.h</Path>
       <Path>ReMichishirube.c</Path>
       <Path>resetprg.c</Path>

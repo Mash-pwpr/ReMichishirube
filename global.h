@@ -56,7 +56,7 @@
 #define HALF_MM 90
 #define ONE_MM 180
 #define STOP_OFF_MM 0
-#define STOP_OFF 0
+#define STOP_OFF_ANGLE 5
 #define SLA_OFFSET_B 5
 #define SLA_OFFSET_A 15
 
@@ -73,24 +73,13 @@
 #define Pi 3.1415926539
 #define Ktolk 1.98
 #define Rmotor 1.07
-//#define R_BODY 35
+#define TREAD_mm 70
 #define MASS 0.1
 #define VOLT_BAT 7.4
 
-#define KR 1
-#define KL 1
-
 //---速度PIDゲイン---
-#define V_KP 5			//8
-#define V_KD 0.3		//0.05
-#define V_KI 0.3		//0.1
-
 #define X_KP 0.005
 #define X_KD 0.50
-
-#define W_KP 0.5 //0.30
-#define W_KD 0//0.50
-#define W_KI 0.02
 
 #define A_KP 0.05		 //0.05
 #define A_KD 5.8
@@ -109,7 +98,6 @@
 #define a6 1760
 #define a6h 1865
 #define b6 1976
-
 
 #define c7 2093
 #define c7h 2217
@@ -131,37 +119,38 @@
 /*------------------------------------------------------------
 		センサ系t
 ------------------------------------------------------------*/
-//----壁判断基準----				東北
-#define WALL_BASE_F 500		//前壁 3700
-#define WALL_BASE_L 150 //700		//左壁 3200
-#define WALL_BASE_R 100 //700		//右壁 3200 600
+//----壁判断基準----			       団活  部室
+#define WALL_BASE_F 700			//前壁 500　　800
+#define WALL_BASE_L 400 //700		//左壁 380    500
+#define WALL_BASE_R 200 //700		//右壁 300    400
 #define WALL_OFF 100
 
 #define WALL_OFFSET 50
 #define WALL_START 2500
 
 #define CONT_FIX 0.1
-#define CONT0 0.0010 				//壁Pゲイン 0.002
-#define CONT1 0.0005				//壁Pゲイン
-#define CONT2 0.00025				//壁Pゲイン
-#define CONT3 0.0001				//壁Pゲイン
-#define CONT4 0.0001				//壁Pゲイン
-
+/*
+#define CONT0 0.0010 		//壁Pゲイン 0.002
+#define CONT1 0.0005		//壁Pゲイン
+#define CONT2 0.00025		//壁Pゲイン
+#define CONT3 0.0001		//壁Pゲイン
+#define CONT4 0.0001		//壁Pゲイン
+*/
 
 //----制御基準値----
-#define SREF_MIN_L 10		//左制御基準　　下限　0
-#define SREF_HALF_L 500		//左制御　係数変更点　200
+#define SREF_MIN_L 100		//左制御基準　　下限　0
+#define SREF_HALF_L 1000		//左制御　係数変更点　200
 #define SREF_MAX_L 4000		//左制御基準　　上限　1000
-#define SREF_MIN_R 10		//右制御基準　　下限　0
-#define SREF_HALF_R 500		//右制御　係数変更点　200
+#define SREF_MIN_R 100		//右制御基準　　下限　0
+#define SREF_HALF_R 1000		//右制御　係数変更点　200
 #define SREF_MAX_R 4000		//右制御基準　　上限　1000
 
 /*------------------------------------------------------------
 		探索系
 ------------------------------------------------------------*/
 //----ゴール座標----
-#define GOAL_X 8	//7
-#define GOAL_Y 8	//7
+#define GOAL_X 3	//7
+#define GOAL_Y 0	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義
@@ -187,7 +176,7 @@
 			unsigned char CTRL:1;		//制御フラグ(B3)
 			unsigned char ACCL:1;		//加速フラグ(B4)
 			unsigned char DECL:1;		//減速フラグ(B5)
-			unsigned char DEF:1;		//定速フラグ(B6)
+			unsigned char FFCTRL:1;		//FF制御フラグ(B6)
 			unsigned char STOP:1;		//停止フラグ(B7)
 			unsigned char R_DIR:1;		//予備ビット(B8)		
 			unsigned char L_DIR:1;		//予備フラグ(B9)

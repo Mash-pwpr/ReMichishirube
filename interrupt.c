@@ -24,8 +24,7 @@ void Mtu3IcCmDIntFunc(void){		//パルス一周期でやると呼び出される
 	pin_write(P55,0);
 
 	//duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
-	duty_l = KL * (vpid_L + sen_dl + xpid_G - wpid_G - apid_G);
-	
+	duty_l = duty_fix_gain_L * (vpid_L + sen_dl + xpid_G - wpid_G - apid_G) + MF.FLAG.FFCTRL * 0.01;
 	if(duty_l < 0){
 		MF.FLAG.L_DIR = 0;					
 		duty_l = - duty_l;	
@@ -72,7 +71,7 @@ void Mtu4IcCmDIntFunc(void){			//右モータ制御関数
 	pin_write(PA6,0);
 
 	//duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
-	duty_r = KR * (vpid_R + sen_dr + xpid_G + wpid_G + apid_G);
+	duty_r = duty_fix_gain_R * (vpid_R + sen_dr + xpid_G + wpid_G + apid_G) + MF.FLAG.FFCTRL * 0.01;
 	if(duty_r < 0){
 		MF.FLAG.R_DIR = 0;
 		duty_r = - duty_r;	
@@ -131,16 +130,15 @@ void Cmt1IntFunc(void){
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
 		ad_r =  ad_res[3] - ad_r_off;
-				
 		break;
+		
 	case 1:
 		pin_write(PE1,0);
 		pin_write(PE3,0);
 				
 		//正面壁センサ
-		
-		pin_write(PE0,1);								//??????LED??ON
-		pin_write(PE2,1);								//??????LED??ON
+		pin_write(PE0,1);
+		pin_write(PE2,1);
 		pin_write(PE4,1);
 	
 		stay(100);
@@ -159,6 +157,7 @@ void Cmt1IntFunc(void){
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
 		ad_fr = ad_res[4] - ad_fr_off;
 		break;
+		
 	case 2:
 		pin_write(PE0,0);								
 		pin_write(PE2,0);								
@@ -203,18 +202,18 @@ void Cmt1IntFunc(void){
 			//制御範囲との比較
 			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
 				if(SREF_HALF_L < dif_l)
-				sen_dl = (float)dif_l * cont_l * CONT_FIX ;
+				sen_dl = (float)dif_l * gain_now.wall_kp * CONT_FIX ;
 				else
-				sen_dl = (float)dif_l * cont_l;
+				sen_dl = (float)dif_l * gain_now.wall_kp;
 			}else{
 				sen_dl = 0;	//範囲外なら０に
 			}
 			
 			if((SREF_MIN_R < dif_r) && (dif_r < SREF_MAX_R)){
 				if(SREF_HALF_R < dif_r)
-				sen_dr = (float)dif_r * cont_r * CONT_FIX;
+				sen_dr = (float)dif_r * gain_now.wall_kp * CONT_FIX;
 				else
-				sen_dr = (float)dif_r * cont_r;
+				sen_dr = (float)dif_r * gain_now.wall_kp;
 			}else{
 				sen_dr = 0;
 			}
@@ -223,11 +222,11 @@ void Cmt1IntFunc(void){
 			sen_dl = sen_dr = 0;
 		}
 		
-		if(sen_dr > 0.05){
-			sen_dr = 0.1;
+		if(sen_dr > 0.15){
+			sen_dr = 0.15;
 		}
-		if(sen_dl > 0.05){
-			sen_dl = 0.1;
+		if(sen_dl > 0.15){
+			sen_dl = 0.15;
 		}
 		break;
 	}
@@ -239,8 +238,8 @@ void Cmt1IntFunc(void){
 void Cmt2IntFunc(){
 
 	time++;
-	time2++;
 	if(time % 10 == 0){
+		time2++;
 		//エンコーダの値取得
 		R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
 		R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
@@ -248,101 +247,98 @@ void Cmt2IntFunc(){
 		R_PG_Timer_SetCounterValue_MTU_U0_C1(0);
 		R_PG_Timer_SetCounterValue_MTU_U0_C2(0);
 		
-		dif_pulse_r = pulse_r + (65536 * pulse_sum_r);
-		dif_pulse_l = pulse_l + (65536 * pulse_sum_l);
+		dif_pulse_r = pulse_r + (65536 * pulse_flag_r);
+		dif_pulse_l = pulse_l + (65536 * pulse_flag_l);
 	
-		pulse_sum_r = 0;
-		pulse_sum_l = 0;
+		pulse_flag_r = 0;
+		pulse_flag_l = 0;
+
+		xR = Kxr * (float)dif_pulse_r;
+		xL = Kxr * (float)dif_pulse_l;
 		
-/*		//取得値のオーバーフロー，アンダーフローの処理
-		if(pulse_sum_r > 0){				//オーバーフロー
-			dif_pulse_r = - (65536 * pulse_sum_r  + pulse_pre_r - pulse_r);				
-			pulse_sum_r = 0;
-		}else if(pulse_sum_r < 0){			//アンダーフロー
-			pulse_sum_r = - pulse_sum_r;
-			dif_pulse_r = (65536 * pulse_sum_r) + pulse_pre_r - pulse_r;
-			pulse_sum_r = 0;
-		}else{
-			dif_pulse_r = pulse_r - pulse_pre_r;	//通常時の処理
-			pulse_sum_r = 0;
+		//物理量計算
+/*		if(dif_pulse_r != 0 ) {
+			xR = Kxr * dif_pulse_r;	//割込周期10[ms]での変位[mm]
+		} else {
+			xR = 0;
 		}
-	
-
-		if(pulse_sum_l > 0 ){				//オーバーーフロー
-			dif_pulse_l = - (65536 * pulse_sum_l + pulse_pre_l - pulse_l);
-			pulse_sum_l = 0;
-		}else if(pulse_sum_l < 0){			//アンダーフロー
-			pulse_sum_l = - pulse_sum_l;
-			dif_pulse_l = (65536 * pulse_sum_l) + pulse_pre_l - pulse_l;
-			pulse_sum_l = 0;
-		}else {
-			dif_pulse_l = pulse_l - pulse_pre_l;	//通常処理
-			pulse_sum_l = 0;
+		if(dif_pulse_l != 0 ){
+			xL = Kxr * dif_pulse_l;
+		} else {
+			xL = 0;
 		}
-*/
-
-/*
-	xR = -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi * (dif_pulse_r % 4096)??? / 4096;
-	xL = -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi * (dif_pulse_l % 4096)??? / 4096;
-*/
-
-	//物理量計算
-	if(dif_pulse_r != 0 ) xR = Kxr * dif_pulse_r * 0.1;	//割込周期10[ms]での変位[mm] →　速度[m/s]
-	else xR = 0;
-	if(dif_pulse_l != 0 ) xL = Kxr * dif_pulse_l * 0.1;
-	else xL = 0;
-	
-	xG = 0.5 * (xR + xL);
-	
-	totalR_mm += xR * 10;
-	totalL_mm += xL * 10;
-	totalG_mm += xG * 10;
-	
-	vel_R = xR;					//距離[mm]を時間で除してに直す[m/s] 
-	vel_L = xL;
-	vel_G = xG;
+*/		xG = (xR + xL) * 0.5;
 		
+		//物理量で扱いやすいm/s = mm/msに変換
+		vel_R = xR * 0.1;
+		vel_L = xL * 0.1;
+		vel_G = (vel_R + vel_L) * 0.5;
+	
+		totalR_mm += xR;	//取得は10ms毎のmm変位なのでmm/ms = m/sに追加m
+		totalL_mm += xL;
+		totalG_mm += xG;
+
+/*		test_valR[time2] = targ_vel[t_cnt_r];//angle_G, sen_dr;
+		test_valL[time2] = vel_omega;//dif_angle, sen_dl;
+	
+		test_valR1[time2] = vel_R;//angle_G;//ad_r, kvpR
+		test_valL1[time2] = vel_L;//omega_G;//ad_l, kvdR
+	
+		test_valR2[time2] = vel_G;
+		test_valL2[time2] = omega_G_rad;
+*/
+/*		test_valR[time2] = omega_direction * targ_omega[t_cnt_w];//angle_G, sen_dr;
+		test_valL[time2] = omega_G_rad;//dif_angle, sen_dl;
+	
+		test_valR1[time2] = vel_omega;//angle_G;//ad_r, kvpR
+		test_valL1[time2] = angle_G;//omega_G;//ad_l, kvdR
+	
+		test_valR2[time2] = vel_R;
+		test_valL2[time2] = vel_L;
+*/
 	}
-		
-	
-/*	test_valR[time2] = targ_vel[t_cnt_r];//angle_G, sen_dr;
-	test_valL[time2] = xG;//dif_angle, sen_dl;
-	
-	test_valR1[time2] = dif_pulse_r;//angle_G;//ad_r, kvpR
-	test_valL1[time2] = dif_pulse_l;//omega_G;//ad_l, kvdR
-	
-	test_valR2[time2] = totalL_mm;
-	test_valL2[time2] = totalR_mm;
-
-*/
-	test_valR[time2] = targ_omega[t_cnt_w];
-	test_valL[time2] = omega_G_rad;
-	
-	test_valR1[time2] = angle_G;
-	test_valL1[time2] = kwpG;
-	
-	test_valR2[time2] = kwdG;
-	test_valL2[time2] = kwiG;
 
 	//PIDしてみる？
+	if(MF.FLAG.WCTRL){
+		//偏差角速度の算出
+		dif_omega = (omega_direction * targ_omega[t_cnt_w]) - omega_G_rad;
+		kwpG = gain_now.omega_kp * dif_omega * TREAD_mm * 0.5 * 0.001;
+		kwiG += gain_now.omega_ki * dif_omega * TREAD_mm * 0.5 * 0.001;
+		vel_omega = kwpG + kwiG;		
+/*		//偏差の計算
+		dif_omega = (W_dir * targ_omega[t_cnt_w]) - omega_G_rad;
+		//偏差のP制御
+		kwpG = W_KP * dif_omega;				
+		//偏差のD制御
+		kwdG = W_KD * (dif_omega - dif_pre_omega);
+		//偏差のI制御
+		kwiG = W_KI * dif_omega;	
+		//PID制御値を統合
+		wpid_G = kwpG + kwiG;// + kwdG );
+		//現在の偏差をバッファに保存 D制御で使う
+		dif_pre_omega = dif_omega;		
+*/	}else{
+		vel_omega = 0;
+		//wpid_G = 0;
+	}
+	
 	
 	if(MF.FLAG.VCTRL){
 		//偏差の計算
-		dif_vel_R = (targ_vel[t_cnt_r] * velR0) - vel_R;
-		dif_vel_L = (targ_vel[t_cnt_l] * velL0) - vel_L;
+		dif_vel_R = (targ_vel[t_cnt_r] * vel_direction_R) + vel_omega - vel_R;
+		dif_vel_L = (targ_vel[t_cnt_l] * vel_direction_L) - vel_omega - vel_L;
 		//偏差のP制御
-		kvpR = V_KP * dif_vel_R;				
-		kvpL = V_KP * dif_vel_L;
-		//偏差のD制御
-		kvdR = V_KD * (dif_vel_R - dif_pre_vel_R);	
-		kvdL = V_KD * (dif_vel_L - dif_pre_vel_L);
-		//偏差のI制御 現在速度係数０とコメントアウトで使っていない
-		kviR += V_KI * dif_vel_R;
-		kviL += V_KI * dif_vel_L;
+		kvpR = gain_now.vel_kpR * dif_vel_R;				
+		kvpL = gain_now.vel_kpL * dif_vel_L;
+				
+		//偏差のI制御
+		kviR += gain_now.vel_kiR * dif_vel_R;
+		kviL += gain_now.vel_kiL * dif_vel_L;
 		
 		//PID制御値を統合
-		vpid_R = (kvpR + kvdR + kviR);
-		vpid_L = (kvpL + kvdL + kviR);
+		vpid_R = (kvpR + kviR);
+		vpid_L = (kvpL + kviL);
+		
 		//現在の偏差をバッファに保存 D制御で使う
 		dif_pre_vel_R = dif_vel_R;		
 		dif_pre_vel_L = dif_vel_L;
@@ -352,22 +348,6 @@ void Cmt2IntFunc(){
 		vpid_L = 0;
 	}
 	
-	if(MF.FLAG.WCTRL){
-		//偏差の計算
-		dif_omega = (W_dir * targ_omega[t_cnt_w]) - omega_G_rad;
-		//偏差のP制御
-		kwpG = W_KP * dif_omega;				
-		//偏差のD制御
-		kwdG = W_KD * (dif_omega - dif_pre_omega);
-		//偏差のI制御
-		kwiG = W_KI * dif_omega;	
-		//PID制御値を統合
-		wpid_G = (kwpG + kwdG + kwiG);
-		//現在の偏差をバッファに保存 D制御で使う
-		dif_pre_omega = dif_omega;		
-	}else{
-		wpid_G = 0;
-	}
 	if(MF.FLAG.ACTRL){
 		//偏差の計算
 		dif_angle = targ_angle - angle_G;
@@ -392,31 +372,26 @@ void Cmt2IntFunc(){
 	}else{
 		xpid_G = 0;
 	}
-
+	
 }
 
 //カウンタ値のオーバーフロー（インクリメント），アンダーフロー(デクリメント)回数をカウント
 
 void Mtu2UnIntFunc() {
-	pulse_sum_r--;
+	pulse_flag_r--;
 }
 void Mtu2OvIntFunc() {
-	pulse_sum_r++;
+	pulse_flag_r++;
 }
 
 void Mtu1UnIntFunc() {
-	pulse_sum_l--;
+	pulse_flag_l--;
 }
 void Mtu1OvIntFunc() {
-	pulse_sum_l++;
+	pulse_flag_l++;
 }
-
 
 //時間計測用割込み関数2
 void Cmt0IntFunc(){
 	ms_time++;
 }
-
-/*void S12ad0IntFunc(void){
-	R_PG_ADC_12_GetResult_S12AD0(ad_res);
-}*/

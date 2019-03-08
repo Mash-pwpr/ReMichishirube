@@ -79,13 +79,25 @@ void get_wall_info()
 		wall_info |= 0x11;								//壁情報を更新
 		tmp |= 0x08;									//3番目のLEDを点灯させるよう設定
 	}
-
+	
+	if(ad_l > WALL_BASE_L){
+		//cont_l = CONT1;		//制御弱め
+	}else{
+		//cont_l = CONT0;		//制御強める
+	}
+		
+	if(ad_r > WALL_BASE_R){
+		//cont_r = CONT1;		//制御弱め
+	}else{
+		//cont_r = CONT0;		//制御強める
+	}
 	pins_write(DISP_LEDS, tmp, LED_NUM);				//LEDを点灯させる
 }
 
 void enc_test(){
 	totalR_mm = totalL_mm = 0;
-	pulse_sum_r = pulse_sum_l = 0;
+	pulse_flag_r = pulse_flag_l = 0;
+	time = 0;
 	R_PG_Timer_StartCount_MTU_U0_C1();
 	R_PG_Timer_StartCount_MTU_U0_C2();
 	R_PG_Timer_StartCount_CMT_U1_C2();
@@ -97,9 +109,9 @@ void enc_test(){
 		
 		pulse_pre_r = pulse_r;
 		pulse_pre_l = pulse_l;
-*/		uart_printf(" dpulse_sum_r: %4d  dpulse_sum_l:%4d totalR_mm:%4d totalL_mm:%4d\r\n",pulse_sum_l, pulse_sum_r,totalR_mm, totalL_mm);
+*/		uart_printf("totalR_mm:%4lf totalL_mm:%4lf\r\n",totalR_mm, totalL_mm);
 		//uart_printf(" dif_pulse_r: %4d  dif_pulse_l:%4d pulse_sum_r:%4d pulse_sum_l:%4d totalR_mm:%4lf totalL_mm:%4lf \r\n", dif_pulse_r, dif_pulse_l,pulse_sum_r,pulse_sum_l,totalR_mm, totalL_mm);
-		ms_wait(100);
+		ms_wait(500);
 	}
 
 }

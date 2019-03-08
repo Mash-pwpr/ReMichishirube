@@ -27,20 +27,46 @@
 	#define ON 1
 	#define OFF 0
 
+	typedef struct{
+		float vel_max;
+		float accel;
+		float omega_max;
+		float omega_accel;
+	} params;
+	
+	typedef struct{
+		float vel_kpR;
+		float vel_kpL;
+		float vel_kiR;
+		float vel_kiL;
+		float omega_kp;
+		float omega_ki;
+		float wall_kp;
+	} gain;
+	
 	//----表示用LED関連----
 	#ifdef EXTERN										//対応ファイルでEXTERNが定義されている場合
 		/*グローバル変数の定義*/
 		uint16_t DISP_LEDS[4] = {PB6, PB7, PC2,PC3};	//表示用LEDのピンの配列
-	#else												//対応ファイルでEXTERNが定義されていない場合
+		volatile params params_now;
+		volatile gain gain_now;
+		volatile params params_search1;
+		volatile gain gain_search1;
+	#else											//対応ファイルでEXTERNが定義されていない場合
 		/*グローバル変数の宣言*/
 		extern uint16_t DISP_LEDS[4];
+		extern volatile params params_now;
+		extern volatile gain gain_now;
+		extern volatile params params_search1;
+		extern volatile gain gain_search1;
+
 	#endif
 
 	//----LEDの数----
 	#define LED_NUM 4
 
 	//----その他----
-	#define DEFWAIT		10000							//wait()用定数
+	#define DEFWAIT		10000						//wait()用定数
 	#define Wait		ms_wait(200)					//少し待機する
 
 /*============================================================
@@ -54,5 +80,8 @@
 	void melody(uint16_t,uint16_t);
 	void start_wait();
 	void start_ready();
+	
+	void setting_params(params);
+	void setting_gain(gain);
 
 #endif /* AUXILIARY_H_ */

@@ -1,4 +1,4 @@
-Renesas Optimizing Linker (W2.08.00 )             08-Feb-2019 16:33:01
+Renesas Optimizing Linker (W2.08.00 )             08-Mar-2019 12:02:02
 
 *** Options ***
 
@@ -60,55 +60,55 @@ W0561100:Cannot find "PIntPRG" specified in option "start"
 
 SECTION                            START      END         SIZE   ALIGN
 B_1
-                                  00000004  00000328       325   1
+                                  00000004  00000329       326   1
 R_1
-                                  00000329  00000379        51   1
+                                  0000032a  0000037a        51   1
 B_2
-                                  0000037a  000003e5        6c   2
+                                  0000037c  000003df        64   2
 R_2
-                                  000003e6  000003ff        1a   2
+                                  000003e0  000003f9        1a   2
 B
-                                  00000400  0000e8c3      e4c4   4
+                                  000003fc  0000aaa3      a6a8   4
 R
-                                  0000e8c4  0000ec63       3a0   4
+                                  0000aaa4  0000ae43       3a0   4
 SU
-                                  0000ec64  0000ed63       100   4
+                                  0000ae44  0000af43       100   4
 SI
-                                  0000ed64  0000f063       300   4
+                                  0000af44  0000b243       300   4
 PResetPRG
                                   fff80000  fff80030        31   1
 C_1
                                   fff80100  fff8020d       10e   1
 C_2
-                                  fff8020e  fff8057f       372   2
+                                  fff8020e  fff80417       20a   2
 C
-                                  fff80580  fff80617        98   4
+                                  fff80418  fff804af        98   4
 C$DSEC
-                                  fff80618  fff8063b        24   4
+                                  fff804b0  fff804d3        24   4
 C$BSEC
-                                  fff8063c  fff80653        18   4
+                                  fff804d4  fff804eb        18   4
 C$INIT
-                                  fff80654  fff80654         0   1
+                                  fff804ec  fff804ec         0   1
 C$VTBL
-                                  fff80654  fff80654         0   1
+                                  fff804ec  fff804ec         0   1
 C$VECT
-                                  fff80654  fff80a53       400   4
+                                  fff804ec  fff808eb       400   4
 D_1
-                                  fff80a54  fff80aa4        51   1
+                                  fff808ec  fff8093c        51   1
 D_2
-                                  fff80aa6  fff80abf        1a   2
+                                  fff8093e  fff80957        1a   2
 D
-                                  fff80ac0  fff80e5f       3a0   4
+                                  fff80958  fff80cf7       3a0   4
 P
-                                  fff80e60  fff91c8a     10e2b   1
+                                  fff80cf8  fff91b6f     10e78   1
 W_1
-                                  fff91c8b  fff91c9b        11   1
+                                  fff91b70  fff91b80        11   1
 W_2
-                                  fff91c9c  fff91cad        12   2
+                                  fff91b82  fff91b93        12   2
 W
-                                  fff91cb0  fff91cb0         0   4
+                                  fff91b94  fff91b94         0   4
 L
-                                  fff91cb0  fff91f40       291   4
+                                  fff91b94  fff91e00       26d   4
 $ADDR_C_FFFFFF80
                                   ffffff80  ffffff83         4   1
 FIXEDVECT

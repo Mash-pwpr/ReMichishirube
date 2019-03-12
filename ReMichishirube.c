@@ -27,7 +27,7 @@ int main(void) {
 	//====変数宣言====
 	char mode = 0;
 	uint16_t i,j;
-	float ttt;
+//	float ttt;
 	//====初期化====
 	R_PG_Clock_Set();					//クロック設定
 
@@ -53,11 +53,6 @@ int main(void) {
 */	
 	sensor_start();
 	
-/*	while(1){
-	uart_printf("gyro_base : %lfangle_G : %lf, omega_G : %lf, omega_G_rad : %lf\r\n", &gyro_base, &angle_G,&omega_G, &omega_G_rad);
-	ms_wait(1000);
-	}
-	
 	/*宴会芸モード*/
 /*	MF.FLAG.ACTRL = 0;
 	MF.FLAG.VCTRL = 1;
@@ -69,30 +64,34 @@ int main(void) {
 	drive_start();
 	while(1);
 */	
-//	MF.FLAG.CTRL = 1;
-	driveA(180);
-	driveD(180,1);
-	//driveX(0);
 
+//	half_sectionA();
+//	half_sectionD();
+
+/*	get_base();
+	MF.FLAG.CTRL = 0;
+	driveA(360);
+	driveD(360,1);
+*/
+//	turn_180();
 //	turn_R90();
 //	driveD(0,1);
-//	driveA(145);
-//	turn_SLA_R90();
+/*	driveA(145);
+	turn_SLA_R90();
+	driveD(90,1);
 //	turn_SLA_L90();
-/*	
-	get_base();
-	ms_wait(100);
+*/	
+//	get_base();
+//	ms_wait(100);
 	//drive_start();
 	
-*/
-	//ms_wait(100);
 	sensor_stop();
 /*	melody(1320,300);
 	melody(1397,300);
 	melody(1568,300);
 */
 	//a_section();
-	melody(c6h,1000);
+	//melody(c6h,1000);
 
 	while(1){ // Main Loop
 		uart_printf("Hello, World!\r\n");	
@@ -143,13 +142,14 @@ int main(void) {
 			start_ready();
 			
 			searchSA();
-			goal_x = goal_y = 0;
+/*			goal_x = goal_y = 0;
 			searchSA();
-			goal_x = GOAL_X;
+*/			goal_x = GOAL_X;
 			goal_y = GOAL_Y;
 
-			turn_180();									//180度回転
-			turn_dir(DIR_TURN_180);
+			//turn_180();									//180度回転
+			sensor_stop();
+			//turn_dir(DIR_TURN_180);
 			break;
 
 			/////////////////////////////////　　↓の二次探索走行とスラローム走行は未実装

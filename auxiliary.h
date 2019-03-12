@@ -81,6 +81,7 @@
 	void start_wait();
 	void start_ready();
 	
+	void auto_Calibration(float,float);
 	void setting_params(params);
 	void setting_gain(gain);
 

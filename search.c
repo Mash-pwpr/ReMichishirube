@@ -37,7 +37,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 	make_route_NESW();											//最短経路探索(route配列に動作が格納される)
 	sensor_start();
 	
-	uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", ad_l, ad_fl, ad_ff, ad_fr, ad_r);
+	//uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", ad_l, ad_fl, ad_ff, ad_fr, ad_r);
 	//====探索走行====
 	do{
 		
@@ -101,6 +101,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void searchSA(){											//連続走行の未完成アルゴリズム、完成させればケッコー早い走行ができる、初期化は直してないからがんばって　標
+	int32_t count = 0;
 
 	//====歩数等初期化====
 	m_step = r_cnt = 0;										//歩数と経路カウンタの初期化
@@ -126,7 +127,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 	//====探索走行====
 	do{
 		//----進行----
-		switch(route[r_cnt++]){								//route配列によって進行を決定。経路カウンタを進める
+		switch(route[r_cnt++]){			//route配列によって進行を決定。経路カウンタを進める
 			//----前進----
 			case 0x88:
 				s_section();
@@ -141,11 +142,11 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				Wait;
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET ){
+/*				if(MF.FLAG.SET ){
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();
+*/				half_sectionA();
 				break;
 			//----180回転----
 			case 0x22:
@@ -162,30 +163,35 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
+				MF.FLAG.CTRL = 0;
+				driveA(HALF_MM);
+				get_wall_info();
 				break;
 			//----左折----
 			case 0x11:
-				if(ad_r > WALL_BASE_R + WALL_OFF){
+/*				if(ad_r > WALL_BASE_R + WALL_OFF){
 					MF.FLAG.SET = 1;
 				}
-				half_sectionD();
+*/				half_sectionD();
 				turn_L90();
 				Wait;
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET){
+/*				if(MF.FLAG.SET){
 					set_position();
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();			//想定通り、ここでも何か抜けてます、がんばって  標
+*/				half_sectionA();			
 				break;
 		}
-		//uart_printf("x:%d, y:%d\r\n",PRELOC.AXIS.X,PRELOC.AXIS.Y);
+
 		adv_pos();
 		conf_route_NESW();
-
-
+/*		count++;
+		if(count > 8){
+			break;	
+		}
+*/		
 	}while((PRELOC.AXIS.X != goal_x) || (PRELOC.AXIS.Y != goal_y));
 	half_sectionD();
 	ms_wait(2000);

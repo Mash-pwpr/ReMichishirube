@@ -68,29 +68,25 @@ void get_wall_info()
 		tmp = 0x06;										//1番目と2番目のLEDを点灯させるよう設定
 	}
 	//----右壁を見る----
-	if(ad_r > WALL_BASE_R){
+	if(ad_r > wall_base_r){
 		//AD値が閾値より大きい(=壁があって光が跳ね返ってきている)場合
 		wall_info |= 0x44;								//壁情報を更新
 		tmp |= 0x01;									//0番目のLEDを点灯させるよう設定
 	}
 	//----左壁を見る----
-	if(ad_l > WALL_BASE_L){
+	if(ad_l > wall_base_l){
 		//AD値が閾値より大きい(=壁があって光が跳ね返ってきている)場合
 		wall_info |= 0x11;								//壁情報を更新
 		tmp |= 0x08;									//3番目のLEDを点灯させるよう設定
 	}
 	
-	if(ad_l > WALL_BASE_L){
-		//cont_l = CONT1;		//制御弱め
-	}else{
-		//cont_l = CONT0;		//制御強める
-	}
-		
-	if(ad_r > WALL_BASE_R){
-		//cont_r = CONT1;		//制御弱め
-	}else{
-		//cont_r = CONT0;		//制御強める
-	}
+	test_valR[time2] = wall_info;//angle_G, sen_dr;
+	test_valL[time2] = ad_l;//dif_angle, sen_dl;
+	test_valR1[time2] = ad_ff;//angle_G;//ad_r, kvpR
+	test_valL1[time2] = ad_r;//omega_G;//ad_l, kvdR
+	test_valR2[time2] = wall_base_l;
+	test_valL2[time2] = wall_base_r;
+	time2++;
 	pins_write(DISP_LEDS, tmp, LED_NUM);				//LEDを点灯させる
 }
 

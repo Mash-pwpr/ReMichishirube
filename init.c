@@ -87,13 +87,13 @@ void val_Init(void){
 	params_search1.omega_max = 6.0;			//単位はrad/s
 	params_search1.omega_accel = 25.0;		//単位はrad/s/s
 		
-	gain_search1.vel_kpR = 3.50f;
-	gain_search1.vel_kpL = 3.50f;
-	gain_search1.vel_kiR = 0.0f;
-	gain_search1.vel_kiL = 0.0f;
+	gain_search1.vel_kpR = 4.0f;		//8.0	//9.2
+	gain_search1.vel_kpL = 4.0f;			//0.02
+	gain_search1.vel_kiR = 0.01f;		//0.03
+	gain_search1.vel_kiL = 0.01f;
 	gain_search1.omega_kp = 0.80f;
 	gain_search1.omega_ki = 0.150f;
-	gain_search1.wall_kp = 0.001;
+	gain_search1.wall_kp = 0.0002f;
 	
 	setting_params(params_search1);
 	setting_gain(gain_search1);

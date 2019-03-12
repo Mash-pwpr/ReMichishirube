@@ -120,15 +120,15 @@
 		センサ系t
 ------------------------------------------------------------*/
 //----壁判断基準----			       団活  部室
-#define WALL_BASE_F 700			//前壁 500　　800
-#define WALL_BASE_L 400 //700		//左壁 380    500
-#define WALL_BASE_R 200 //700		//右壁 300    400
-#define WALL_OFF 100
+#define WALL_BASE_F 500			//前壁 500　　800
+#define WALL_BASE_L 600 //700		//左壁 380    500
+#define WALL_BASE_R 350 //700		//右壁 300    400
+#define WALL_OFF 50	//尻当て用の補正
 
-#define WALL_OFFSET 50
-#define WALL_START 2500
+#define WALL_OFFSET 0	//閾値のオフセット
+#define WALL_START 2000
 
-#define CONT_FIX 0.1
+#define CONT_FIX 0.01f
 /*
 #define CONT0 0.0010 		//壁Pゲイン 0.002
 #define CONT1 0.0005		//壁Pゲイン
@@ -150,7 +150,7 @@
 ------------------------------------------------------------*/
 //----ゴール座標----
 #define GOAL_X 3	//7
-#define GOAL_Y 0	//7
+#define GOAL_Y 6	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義

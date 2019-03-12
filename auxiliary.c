@@ -102,7 +102,7 @@ void select_mode(char *mode){
 		R_PG_Timer_GetCounterValue_MTU_U0_C1(&encL);
 		R_PG_Timer_GetCounterValue_MTU_U0_C2(&encR);
 		
-		nowR = (uint16_t)(encR / 4500);
+		nowR = (uint16_t)(encR / 4400);
 		nowL = (uint16_t)(encL / 30000);
 		
 		//ms_wait(50);
@@ -189,15 +189,16 @@ void start_ready(void){
 
 	sensor_start();
 	
-	MF.FLAG.CTRL = 0;										//制御を無効にする
-	set_dir(BACK);											//後退するようモータの回転方向を設定
-	driveC(1000, 1);								//尻を当てる程度に後退。回転後に停止する
+	MF.FLAG.CTRL = 0;								//制御を無効にする
+	set_dir(BACK);									//後退するようモータの回転方向を設定
+	//driveC(1000, 1);								//尻を当てる程度に後退。回転後に停止する
 	get_base();
-	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
+	set_dir(FORWARD);								//前進するようにモータの回転方向を設定
 	
-	GYRO_OFFSET(1000);
+	//GYRO_OFFSET(1000);
 	
 	melody(c6,1000);
+	auto_Calibration(0.50,0.75);
 	driveA(SET_MM);
 }
 
@@ -216,4 +217,10 @@ void setting_gain(gain instance){
 	gain_now.omega_kp = instance.omega_kp;
 	gain_now.omega_ki = instance.omega_ki;
 	gain_now.wall_kp = instance.wall_kp;
+}
+
+void auto_Calibration(float constant_r, float constant_l){
+	wall_base_l = ad_l * constant_l;
+	//wall_base_ff = ad_ff * constant;
+	wall_base_r = ad_r * constant_r;
 }

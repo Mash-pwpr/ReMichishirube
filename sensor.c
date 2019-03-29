@@ -40,7 +40,6 @@ unsigned char get_base()
 		res = 1;										//resを1に
 	}else{
 	}
-	//ms_wait(50);
 	uart_printf("base:%d, %d\r\n", base_r, base_l);
 
 	return res;											//理想的な値を取得できたかを返す
@@ -80,13 +79,6 @@ void get_wall_info()
 		tmp |= 0x08;									//3番目のLEDを点灯させるよう設定
 	}
 	
-	test_valR[time2] = wall_info;//angle_G, sen_dr;
-	test_valL[time2] = ad_l;//dif_angle, sen_dl;
-	test_valR1[time2] = ad_ff;//angle_G;//ad_r, kvpR
-	test_valL1[time2] = ad_r;//omega_G;//ad_l, kvdR
-	test_valR2[time2] = wall_base_l;
-	test_valL2[time2] = wall_base_r;
-	time2++;
 	pins_write(DISP_LEDS, tmp, LED_NUM);				//LEDを点灯させる
 }
 
@@ -106,7 +98,6 @@ void enc_test(){
 		pulse_pre_r = pulse_r;
 		pulse_pre_l = pulse_l;
 */		uart_printf("totalR_mm:%4lf totalL_mm:%4lf\r\n",totalR_mm, totalL_mm);
-		//uart_printf(" dif_pulse_r: %4d  dif_pulse_l:%4d pulse_sum_r:%4d pulse_sum_l:%4d totalR_mm:%4lf totalL_mm:%4lf \r\n", dif_pulse_r, dif_pulse_l,pulse_sum_r,pulse_sum_l,totalR_mm, totalL_mm);
 		ms_wait(500);
 	}
 

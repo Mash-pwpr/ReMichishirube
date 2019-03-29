@@ -57,8 +57,8 @@
 #define ONE_MM 180
 #define STOP_OFF_MM 0
 #define STOP_OFF_ANGLE 5
-#define SLA_OFFSET_B 5
-#define SLA_OFFSET_A 15
+#define SLA_OFFSET_B 30
+#define SLA_OFFSET_A 53
 
 //----テーブル速度関連----
 #define MAXSPEED_S 1000		//探索走行時の速度の最大の要素数
@@ -67,15 +67,15 @@
 #define MINSPEED_H 100		//高速走行時の速度の最小の要素数
 
 //----エンコーダ・DCモータ関連----
-#define DIA_WHEEL_mm 11
-#define DIA_PINI_mm 4
-#define DIA_SQUR_mm 17.5
-#define Pi 3.1415926539
-#define Ktolk 1.98
-#define Rmotor 1.07
-#define TREAD_mm 70
-#define MASS 0.1
-#define VOLT_BAT 7.4
+#define DIA_WHEEL_mm 11.5f
+#define DIA_PINI_mm 4.0f
+#define DIA_SQUR_mm 17.5f
+#define Pi 3.1415926f
+#define Ktolk 1.98f
+#define Rmotor 1.07f
+#define TREAD_mm 67.0f
+#define MASS 0.1f
+#define VOLT_BAT 7.4f
 
 //---速度PIDゲイン---
 #define X_KP 0.005
@@ -120,7 +120,7 @@
 		センサ系t
 ------------------------------------------------------------*/
 //----壁判断基準----			       団活  部室
-#define WALL_BASE_F 500			//前壁 500　　800
+#define WALL_BASE_F 800			//前壁 500　　800
 #define WALL_BASE_L 600 //700		//左壁 380    500
 #define WALL_BASE_R 350 //700		//右壁 300    400
 #define WALL_OFF 50	//尻当て用の補正
@@ -128,7 +128,7 @@
 #define WALL_OFFSET 0	//閾値のオフセット
 #define WALL_START 2000
 
-#define CONT_FIX 0.01f
+#define CONT_FIX 0.05f
 /*
 #define CONT0 0.0010 		//壁Pゲイン 0.002
 #define CONT1 0.0005		//壁Pゲイン
@@ -139,18 +139,18 @@
 
 //----制御基準値----
 #define SREF_MIN_L 100		//左制御基準　　下限　0
-#define SREF_HALF_L 1000		//左制御　係数変更点　200
+#define SREF_HALF_L 3000		//左制御　係数変更点　200
 #define SREF_MAX_L 4000		//左制御基準　　上限　1000
 #define SREF_MIN_R 100		//右制御基準　　下限　0
-#define SREF_HALF_R 1000		//右制御　係数変更点　200
+#define SREF_HALF_R 3000		//右制御　係数変更点　200
 #define SREF_MAX_R 4000		//右制御基準　　上限　1000
 
 /*------------------------------------------------------------
 		探索系
 ------------------------------------------------------------*/
 //----ゴール座標----
-#define GOAL_X 3	//7
-#define GOAL_Y 6	//7
+#define GOAL_X 7	//7
+#define GOAL_Y 15	//7
 
 /*------------------------------------------------------------
 		共用・構造体の定義
@@ -172,7 +172,7 @@
 		struct ms_flags{				//構造体の宣言
 			unsigned char SET:1;		//予備ビット(B0)		(:1は1ビット分の意味、ビットフィールド)
 			unsigned char SCND:1;		//二次フラグ(B1)
-			unsigned char SLAL:1;		//旋回フラグ(B2)
+			unsigned char WALL:1;		//旋回フラグ(B2)
 			unsigned char CTRL:1;		//制御フラグ(B3)
 			unsigned char ACCL:1;		//加速フラグ(B4)
 			unsigned char DECL:1;		//減速フラグ(B5)

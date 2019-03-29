@@ -129,7 +129,12 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x08;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_r =  ad_res[3] - ad_r_off;
+		ad_r =  ad_res[3];// - ad_r_off;
+		if((ad_r_off - ad_r) > 100){
+			MF.FLAG.WALL = 1;	
+		}
+		ad_r_off = ad_r;
+		
 		break;
 		
 	case 1:
@@ -174,28 +179,39 @@ void Cmt1IntFunc(void){
 		//====加減速処理====
 			//----減速----
 		if(MF.FLAG.VCTRL){
-			if(MF.FLAG.DECL){															
-				if(t_cnt_r > minindex) t_cnt_r--; 
-				if(t_cnt_l > minindex) t_cnt_l--; 
+			if(MF.FLAG.DECL){
+				targ_vel -= params_now.accel * 0.001;
+				if(targ_vel < 0){
+					targ_vel = 0.0f;	
+				}
 			}
 			//----加速----
-			else if(MF.FLAG.ACCL){			
-				if(t_cnt_r < maxindex) t_cnt_r++;
-				if(t_cnt_l < maxindex) t_cnt_l++;
+			else if(MF.FLAG.ACCL){	
+				targ_vel += params_now.accel * 0.001;
+				if(targ_vel > params_now.vel_max){
+					targ_vel = params_now.vel_max;
+				}
 			}
 		}
+		
 		if(MF.FLAG.WCTRL){
 			if(MF.FLAG.WDECL){															
-				if(t_cnt_w > minindex) t_cnt_w--; 
+				targ_omega -= params_now.omega_accel * 0.001;
+				if(targ_omega < 0.0f){
+					targ_omega = 0.0f;	
+				}
 			}
 			else if(MF.FLAG.WACCL){
-				if(t_cnt_w < maxindex_w) t_cnt_w++; 	
+				targ_omega += params_now.omega_accel * 0.001;
+				if(targ_omega > params_now.omega_max){
+					targ_omega = params_now.omega_max;	
+				}
 			}
 		}
 		
 		//壁制御フラグアリの場合
 		if(MF.FLAG.CTRL){
-		/*	//差をとる
+			//差をとる
 			dif_l = (int16_t)(ad_l - base_l);
 			dif_r = (int16_t)(ad_r - base_r);
 
@@ -216,8 +232,8 @@ void Cmt1IntFunc(void){
 				sen_dr = (float)dif_r * gain_now.wall_kp;
 			}else{
 				sen_dr = 0;
-			}*/
-			sen_dl = sen_dr = 0;
+			}
+			//sen_dl = sen_dr = 0;
 		}else{
 			//そもそもフラグ無
 			sen_dl = sen_dr = 0;
@@ -239,25 +255,30 @@ void Cmt1IntFunc(void){
 void Cmt2IntFunc(){
 
 	time++;
-	if(time % 10 == 0){
-		//time2++;
-		//エンコーダの値取得
-		R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
-		R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
-		
-		R_PG_Timer_SetCounterValue_MTU_U0_C1(0);
-		R_PG_Timer_SetCounterValue_MTU_U0_C2(0);
-		
-		dif_pulse_r = pulse_r + (65536 * pulse_flag_r);
-		dif_pulse_l = pulse_l + (65536 * pulse_flag_l);
+	time2++;
+	//エンコーダの値取得
+	R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
+	R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
 	
-		pulse_flag_r = 0;
-		pulse_flag_l = 0;
+	R_PG_Timer_SetCounterValue_MTU_U0_C1(0);
+	R_PG_Timer_SetCounterValue_MTU_U0_C2(0);
+	
+	dif_pulse_r = pulse_r + (65536 * pulse_flag_r);
+	dif_pulse_l = pulse_l + (65536 * pulse_flag_l);
+	
+	pulse_flag_r = 0;
+	pulse_flag_l = 0;
+	
+	dif_pulse_counter_r += dif_pulse_r;
+	dif_pulse_counter_l += dif_pulse_l;
 
-		xR = Kxr * (float)dif_pulse_r;
-		xL = Kxr * (float)dif_pulse_l;
-		
-		//物理量計算
+	vel_R = Kxr * (float)dif_pulse_r;
+	vel_L = Kxr * (float)dif_pulse_l;
+	
+	totalR_mm = Kxr * (float)dif_pulse_counter_r;
+	totalL_mm = Kxr * (float)dif_pulse_counter_l;
+	
+	//物理量計算
 /*		if(dif_pulse_r != 0 ) {
 			xR = Kxr * dif_pulse_r;	//割込周期10[ms]での変位[mm]
 		} else {
@@ -268,64 +289,56 @@ void Cmt2IntFunc(){
 		} else {
 			xL = 0;
 		}
-*/		xG = (xR + xL) * 0.5;
-		
-		//物理量で扱いやすいm/s = mm/msに変換
-		vel_R = xR * 0.1;
-		vel_L = xL * 0.1;
-		vel_G = (vel_R + vel_L) * 0.5;
+*/	
+	//物理量で扱いやすいm/s = mm/msに変換
+	vel_G = (vel_R + vel_L) * 0.5;
+	totalG_mm = (totalR_mm + totalL_mm) * 0.5;
 	
-		totalR_mm += xR;	//取得は10ms毎のmm変位なのでmm/ms = m/sに追加m
-		totalL_mm += xL;
-		totalG_mm += xG;
-
-		
 //センサログ用		
-/*		test_valR[time2] = totalG_mm;//angle_G, sen_dr;
-		test_valL[time2] = ad_l;//dif_angle, sen_dl;
+/*		log.test1[time2] = totalG_mm;//angle_G, sen_dr;
+		log.test2[time2] = ad_l;//dif_angle, sen_dl;
 	
-		test_valR1[time2] = ad_ff;//angle_G;//ad_r, kvpR
-		test_valL1[time2] = ad_r;//omega_G;//ad_l, kvdR
+		log.test3[time2] = ad_ff;//angle_G;//ad_r, kvpR
+		log.test4[time2] = ad_r;//omega_G;//ad_l, kvdR
 	
-		test_valR2[time2] = base_l;
-		test_valL2[time2] = base_r;		
+		log.test5[time2] = base_l;
+		log.test6[time2] = base_r;		
 */		
 //並進速度ログ用		
-/*		test_valR[time2] = targ_vel[t_cnt_r];//angle_G, sen_dr;
-		test_valL[time2] = vel_omega;//dif_angle, sen_dl;
+/*	log.test1[time2] = targ_vel;//angle_G, sen_dr;
+	log.test2[time2] = vel_omega;//dif_angle, sen_dl;
 	
-		test_valR1[time2] = vel_R;//angle_G;//ad_r, kvpR
-		test_valL1[time2] = vel_L;//omega_G;//ad_l, kvdR
+	log.test3[time2] = vel_R;//angle_G;//ad_r, kvpR
+	log.test4[time2] = vel_L;//omega_G;//ad_l, kvdR
 	
-		test_valR2[time2] = vel_G;
-		test_valL2[time2] = omega_G_rad;
+	log.test5[time2] = vel_G;
+	log.test6[time2] = totalG_mm;
 */
 //回転速度ログ用
-/*		test_valR[time2] = omega_direction * targ_omega[t_cnt_w];//angle_G, sen_dr;
-		test_valL[time2] = omega_G_rad;//dif_angle, sen_dl;
+/*		log.test1[time2] = omega_direction * targ_omega;	//angle_G, sen_dr;
+		log.test2[time2] = omega_G_rad;				//dif_angle, sen_dl;
 	
-		test_valR1[time2] = vel_omega;//angle_G;//ad_r, kvpR
-		test_valL1[time2] = angle_G;//omega_G;//ad_l, kvdR
+		log.test3[time2] = vel_omega;				//angle_G;//ad_r, kvpR
+		log.test4[time2] = angle_G;				//omega_G;//ad_l, kvdR
 	
-		test_valR2[time2] = vel_R;
-		test_valL2[time2] = vel_L;
+		log.test5[time2] = vel_R;
+		log.test6[time2] = vel_L;
 */
 //スラローム
-/*		test_valR[time2] = omega_direction * targ_omega[t_cnt_w];//angle_G, sen_dr;
-		test_valL[time2] = omega_G_rad;//dif_angle, sen_dl;
+		log.test1[time2] = omega_direction * targ_omega;//angle_G, sen_dr;
+		log.test2[time2] = omega_G_rad;//dif_angle, sen_dl;
 	
-		test_valR1[time2] = vel_R;//angle_G;//ad_r, kvpR
-		test_valL1[time2] = vel_L;//omega_G;//ad_l, kvdR
+		log.test3[time2] = vel_R;//angle_G;//ad_r, kvpR
+		log.test4[time2] = vel_L;//omega_G;//ad_l, kvdR
 	
-		test_valR2[time2] = totalG_mm;
-		test_valL2[time2] = angle_G;
-*/
-	}
+		log.test5[time2] = totalG_mm;
+		log.test6[time2] = angle_G;
+
 
 	//PIDしてみる？
 	if(MF.FLAG.WCTRL){
 		//偏差角速度の算出
-		dif_omega = (omega_direction * targ_omega[t_cnt_w]) - omega_G_rad;
+		dif_omega = (omega_direction * targ_omega) - omega_G_rad;
 		kwpG = gain_now.omega_kp * dif_omega * TREAD_mm * 0.5 * 0.001;
 		kwiG += gain_now.omega_ki * dif_omega * TREAD_mm * 0.5 * 0.001;
 		vel_omega = kwpG + kwiG;		
@@ -343,14 +356,13 @@ void Cmt2IntFunc(){
 		dif_pre_omega = dif_omega;		
 */	}else{
 		vel_omega = 0;
-		//wpid_G = 0;
 	}
 	
 	
 	if(MF.FLAG.VCTRL){
 		//偏差の計算
-		dif_vel_R = (targ_vel[t_cnt_r] * vel_direction_R) + vel_omega - vel_R;
-		dif_vel_L = (targ_vel[t_cnt_l] * vel_direction_L) - vel_omega - vel_L;
+		dif_vel_R = (targ_vel * vel_direction_R) + vel_omega - vel_R;
+		dif_vel_L = (targ_vel * vel_direction_L) - vel_omega - vel_L;
 		//偏差のP制御
 		kvpR = gain_now.vel_kpR * dif_vel_R;				
 		kvpL = gain_now.vel_kpL * dif_vel_L;

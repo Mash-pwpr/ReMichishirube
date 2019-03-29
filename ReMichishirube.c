@@ -40,7 +40,7 @@ int main(void) {
 
 	//ttt = GYRO_read();
 	//uart_printf("%lf\r\n",ttt);
-	batt_Check(100);
+	batt_Check(1000);
 	//GYRO_OFFSET(1000);
 	
 //	melody(c6h,1000);		
@@ -52,6 +52,7 @@ int main(void) {
 	GYRO_OFFSET(1000);
 */	
 	sensor_start();
+//	start_wait();
 	
 	/*宴会芸モード*/
 /*	MF.FLAG.ACTRL = 0;
@@ -65,34 +66,47 @@ int main(void) {
 	while(1);
 */	
 
-//	half_sectionA();
-//	half_sectionD();
-
-/*	get_base();
-	MF.FLAG.CTRL = 0;
-	driveA(360);
-	driveD(360,1);
+/*	MF.FLAG.CTRL = 0;
+	time = time2 = 0;
+	driveA(100);
+	driveD(100,1);
 */
 //	turn_180();
+
 //	turn_R90();
 //	driveD(0,1);
-/*	driveA(145);
-	turn_SLA_R90();
+
+	driveA(90);
+	turn_SLA_L90();
+/*	while(1){
+		driveA(180);
+		turn_SLA_L90();
+	}	
+*/		
 	driveD(90,1);
 //	turn_SLA_L90();
-*/	
-//	get_base();
-//	ms_wait(100);
-	//drive_start();
 	
+/* サーキット専用プログラム	
+	get_base();
+	MF.FLAG.CTRL = 1;
+	driveA(SET_MM);
+	half_sectionA();
+	for(i = 0;i<4;i++){
+		driveA(14*180 - 90);
+		half_sectionD();
+		turn_R90();
+		driveA(6*180 - 90);
+		half_sectionD();
+		turn_R90();
+	}
+	half_sectionA();
+	half_sectionD();
+*/	
 	sensor_stop();
 /*	melody(1320,300);
 	melody(1397,300);
 	melody(1568,300);
 */
-	//a_section();
-	//melody(c6h,1000);
-
 	while(1){ // Main Loop
 		uart_printf("Hello, World!\r\n");	
 		//====モードセレクト====
@@ -110,7 +124,7 @@ int main(void) {
 			//offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
 			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
 			for(i=0;i<1000;i++){
-				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",test_valR[i],test_valL[i],test_valR1[i],test_valL1[i],test_valR2[i],test_valL2[i]);
+				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",log.test1[i],log.test2[i],log.test3[i],log.test4[i],log.test5[i],log.test6[i]);
 				ms_wait(1);
 			}
 			uart_printf("ALL\r\n");

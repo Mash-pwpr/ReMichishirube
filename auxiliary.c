@@ -191,7 +191,6 @@ void start_ready(void){
 	
 	MF.FLAG.CTRL = 0;								//制御を無効にする
 	set_dir(BACK);									//後退するようモータの回転方向を設定
-	//driveC(1000, 1);								//尻を当てる程度に後退。回転後に停止する
 	get_base();
 	set_dir(FORWARD);								//前進するようにモータの回転方向を設定
 	

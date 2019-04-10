@@ -19,11 +19,19 @@
 /*============================================================
 		各種定数･変数宣言
 ============================================================*/
-	//----LEDのON/OFF出力----
-	#define VLED_ON		1
-	#define VLED_OFF	0
 
-	#define SHIFT		6									//A-D変換シフト値
+	typedef struct{
+		int16_t val;			//LEDがONの時の値
+		int16_t base;			//LEDがOFFの時の値
+		int16_t dif;			//差分
+		uint16_t threshold;	//壁判断閾値	
+	}wall_sensor;
+	
+	typedef struct{
+		int16_t epsilon;		//壁制御偏差
+		int16_t pre_epsilon;		//D制御用のバッファ
+		float sen_pid;
+	}wall_control;
 
 	//====変数====
 	#ifdef EXTERN
@@ -34,17 +42,30 @@
 		uint16_t VLED_FF = PE2;
 		uint16_t VLED_R = PE3;								//右側センサ発光部のLEDのポート
 		uint16_t VLED_FR = PE4;								//前向き右側センサ発光部のLEDのポート
+		
+		volatile wall_sensor wall_r;
+		volatile wall_sensor wall_fr;
+		volatile wall_sensor wall_ff;
+		volatile wall_sensor wall_fl;
+		volatile wall_sensor wall_l;
+		
 		//----その他----
 		unsigned char tp;											//タスクポインタ
-		volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;						//A-D値格納
+/*		volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;						//A-D値格納
 		volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
+		
 		volatile int16_t wall_base_l, wall_base_ff, wall_base_r;
-		volatile uint16_t ad_res[5],ad_pre_res[5];
+		
+*/		volatile uint16_t ad_res[5],ad_pre_res[5];
+		
 		volatile uint16_t base_l, base_r;								//基準値を格納
 		volatile int16_t dif_l, dif_r;									//AD値と基準との差
+		
 		volatile float volt_bat;									//電源電圧監視
-		volatile float cont_r,cont_l;										//壁制御の比例定数
-		volatile float Cont_kp[5];									//壁制御の場合分け
+		volatile float cont_r,cont_l;									//壁制御の比例定数
+		volatile float dif_total;
+		volatile float sen_ctrl;
+		
 		volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
 		volatile float gyro_base;
 	#else
@@ -54,19 +75,32 @@
 		extern uint16_t VLED_FF;
 		extern uint16_t VLED_FL;
 		extern uint16_t VLED_L;
+		
+		//----壁センサ構造体----
+		extern volatile wall_sensor wall_r;
+		extern volatile wall_sensor wall_fr;
+		extern volatile wall_sensor wall_ff;
+		extern volatile wall_sensor wall_fl;
+		extern volatile wall_sensor wall_l;
+
+		
 		//----その他----
 		extern unsigned char tp;
-		extern volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;
+/*		extern volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;
 		extern volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
 		extern volatile int16_t wall_base_l, wall_base_ff, wall_base_r;
-		extern volatile uint16_t ad_res[5],ad_pre_res[5];
+	*/	extern volatile uint16_t ad_res[5],ad_pre_res[5];
 		extern volatile uint16_t base_l, base_r;
 		extern volatile int16_t dif_l, dif_r;
 		extern volatile float volt_bat;
 		extern volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
 		
-		extern volatile float cont_r,cont_l;										
-		extern volatile float Cont_kp[5];
+		extern volatile float cont_r,cont_l;
+		
+		extern volatile float dif_total;
+		extern volatile float sen_ctrl;
+		
+		
 		extern volatile float gyro_base;
 
 	#endif
@@ -80,5 +114,6 @@
 	void enc_test();
 	void sensor_start();
 	void sensor_stop();
+	void sensor_check();
 	
 #endif /* SENSOR_H_ */

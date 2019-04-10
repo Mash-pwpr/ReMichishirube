@@ -28,8 +28,8 @@ unsigned char get_base()
 
 	ms_wait(10);
 	//----制御用の基準を取得----
-	base_l = ad_l - WALL_OFFSET;										//現在の左側のセンサ値で決定
-	base_r = ad_r - WALL_OFFSET;										//現在の右側のセンサ値で決定
+//	base_l = ad_l - WALL_OFFSET;										//現在の左側のセンサ値で決定
+//	base_r = ad_r - WALL_OFFSET;										//現在の右側のセンサ値で決定
 
 	//----基準が理想的だとLED点滅----
 	if((-50 < (int)(base_l - base_r)) && ((int)(base_l - base_r) < 50)){
@@ -61,19 +61,19 @@ void get_wall_info()
 	pins_write(DISP_LEDS, 0, LED_NUM);					//LEDを全消灯
 
 	//----前壁を見る----
-	if(ad_ff > WALL_BASE_F){
+	if(wall_ff.dif > wall_ff.threshold){
 		//AD値が閾値より大きい(=壁があって光が跳ね返ってきている)場合
 		wall_info |= 0x88;								//壁情報を更新
 		tmp = 0x06;										//1番目と2番目のLEDを点灯させるよう設定
 	}
 	//----右壁を見る----
-	if(ad_r > wall_base_r){
+	if(wall_r.dif > wall_r.threshold){
 		//AD値が閾値より大きい(=壁があって光が跳ね返ってきている)場合
 		wall_info |= 0x44;								//壁情報を更新
 		tmp |= 0x01;									//0番目のLEDを点灯させるよう設定
 	}
 	//----左壁を見る----
-	if(ad_l > wall_base_l){
+	if(wall_l.dif > wall_l.threshold){
 		//AD値が閾値より大きい(=壁があって光が跳ね返ってきている)場合
 		wall_info |= 0x11;								//壁情報を更新
 		tmp |= 0x08;									//3番目のLEDを点灯させるよう設定
@@ -124,4 +124,31 @@ void sensor_stop(){
 	pin_write(PE3,0);
 	pin_write(PE4,0);
 
+}
+void sensor_check(){
+	MF.FLAG.CTRL = 1;
+	R_PG_Timer_StartCount_CMT_U0_C1();
+	get_base();
+	while(1){
+		pins_write(DISP_LEDS, 0, LED_NUM);											//pins_write()はport.cに関数定義あり
+		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d ", wall_r.dif, wall_fr.dif, wall_ff.dif, wall_fr.dif, wall_r.dif);
+		//uart_printf(" | dif_l: %4d dif_r:%4d\r\n", wall_r., dif_r);
+	//----LEDが4つの場合----
+		if(wall_fr.dif > wall_fr.threshold){
+			// ここ、ad_lになってましたよ！！
+			pin_write(DISP_LEDS[0], ON);											//pin_write()はport.cに関数定義あり
+		}
+		if(wall_r.dif > wall_r.threshold){
+			pin_write(DISP_LEDS[1], ON);
+		}
+		if(wall_l.dif > wall_l.threshold){
+			pin_write(DISP_LEDS[2], ON);
+		}
+		if(wall_fl.dif > wall_fl.threshold){
+			pin_write(DISP_LEDS[3], ON);
+		}
+		ms_wait(1000);
+
+		}
+	MF.FLAG.CTRL = 0;	
 }

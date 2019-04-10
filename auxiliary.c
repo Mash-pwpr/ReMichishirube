@@ -137,16 +137,21 @@ void timer_start(){
 }
 
 void melody(uint16_t Hz, uint16_t length){
-	float count = (float)1000000/Hz;
+	float count = (float)1000000 / Hz;
 	
-	count = count*54239;
-	count = count/1130;
+	//周波数をクロック数に変換
+	count = count * 54239;
+	count = count / 1130;
 	
 	R_PG_Timer_SetTGR_A_MTU_U0_C0((uint16_t)(count/10));
 	R_PG_Timer_SetTGR_B_MTU_U0_C0((uint16_t)count);
 	
 	R_PG_Timer_StartCount_MTU_U0_C0();
 	ms_wait(length);
+	
+	R_PG_Timer_SetTGR_A_MTU_U0_C0(479);
+	R_PG_Timer_SetTGR_B_MTU_U0_C0(479);
+	
 	R_PG_Timer_HaltCount_MTU_U0_C0();
 	
 }
@@ -166,8 +171,8 @@ void start_wait(){
 	uart_printf("Ready???\r\n");
 	
 	while(1){
-		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", ad_l, ad_fl, ad_ff, ad_fr, ad_r);
-		if(ad_ff > WALL_START){
+		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", wall_l.val,wall_fl.val, wall_ff.val, wall_fl.val, wall_l.val);
+		if(wall_ff.val > WALL_START){
 			melody(e6,300);
 			melody(f6,300);
 			melody(g6,300);
@@ -219,7 +224,8 @@ void setting_gain(gain instance){
 }
 
 void auto_Calibration(float constant_r, float constant_l){
-	wall_base_l = ad_l * constant_l;
+	wall_l.threshold = (uint16_t)(wall_l.dif * constant_l);
 	//wall_base_ff = ad_ff * constant;
-	wall_base_r = ad_r * constant_r;
+	wall_r.threshold = (uint16_t)(wall_r.dif * constant_r);
+	uart_printf("threshold %d, %d :: dif %d, %d\r\n",wall_l.threshold, wall_r.threshold, wall_l.dif, wall_r.dif);
 }

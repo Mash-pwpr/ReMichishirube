@@ -50,7 +50,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 			//----右折----
 			case 0x44:
 				turn_R90();									//右回転
-				if(ad_l > WALL_BASE_L){
+				if(wall_l.dif > wall_l.threshold){
 					set_position();
 				}
 				turn_dir(DIR_TURN_R90);						//マイクロマウス内部位置情報でも右回転処理
@@ -61,7 +61,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 			//----180回転----
 			case 0x22:
 				turn_180();							//180度回転
-				if(ad_ff > WALL_BASE_F){
+				if(wall_ff.dif > wall_ff.threshold){
 					set_position();
 				}
 				turn_dir(DIR_TURN_180);						//マイクロマウス内部位置情報でも180度回転処理
@@ -72,7 +72,7 @@ void searchA(){												//一次走行　一番基本的な初期装備
 			//----左折----
 			case 0x11:
 				turn_L90();									//左回転
-				if(ad_r > WALL_BASE_R){
+				if(wall_r.dif > wall_ff.threshold){
 					set_position();
 				}
 				turn_dir(DIR_TURN_L90);						//マイクロマウス内部位置情報でも左回転処理
@@ -113,7 +113,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
 	
-	if(ad_ff > WALL_BASE_F){
+	if(wall_ff.dif > wall_ff.threshold){
 		turn_180();
 		Wait;	
 		turn_dir(DIR_TURN_180);
@@ -133,7 +133,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				break;
 			//----右折----
 			case 0x44:
-				if(ad_l > WALL_BASE_L + WALL_OFF){
+				if(wall_l.dif > wall_l.threshold + WALL_OFF){
 					MF.FLAG.SET = 1;
 				}
 				half_sectionD();
@@ -150,7 +150,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(ad_ff > WALL_BASE_F){
+				if(wall_ff.dif > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
 				turn_180();
@@ -214,7 +214,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
 	
-	if(ad_ff > WALL_BASE_F){
+	if(wall_ff.dif > wall_ff.threshold){
 		turn_180();
 		Wait;	
 		turn_dir(DIR_TURN_180);
@@ -234,7 +234,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 				break;
 			//----右折----
 			case 0x44:
-				if(ad_l > WALL_BASE_L + WALL_OFF){
+				if(wall_l.dif > wall_l.dif + WALL_OFF){
 					MF.FLAG.SET = 1;
 				}
 				half_sectionD();
@@ -251,7 +251,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(ad_ff > WALL_BASE_F){
+				if(wall_ff.dif > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
 				turn_180();
@@ -267,7 +267,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 				break;
 			//----左折----
 			case 0x11:
-				if(ad_r > WALL_BASE_R + WALL_OFF){
+				if(wall_r.dif > wall_r.threshold + WALL_OFF){
 					MF.FLAG.SET = 1;
 				}
 				half_sectionD();
@@ -308,7 +308,7 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
 	
-	if(ad_ff > WALL_BASE_F){
+	if(wall_ff.dif > wall_ff.threshold){
 		turn_180();
 		Wait;	
 		turn_dir(DIR_TURN_180);
@@ -335,7 +335,7 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(ad_ff > WALL_BASE_F){
+				if(wall_ff.dif > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
 				turn_180();
@@ -384,7 +384,7 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
 	
-	if(ad_ff > WALL_BASE_F){
+	if(wall_ff.dif > wall_ff.threshold){
 		turn_180();
 		Wait;	
 		turn_dir(DIR_TURN_180);
@@ -411,7 +411,7 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(ad_ff > WALL_BASE_F){
+				if(wall_ff.threshold > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
 				turn_180();

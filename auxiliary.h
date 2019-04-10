@@ -28,10 +28,18 @@
 	#define OFF 0
 
 	typedef struct{
+		//物理量
 		float vel_max;
 		float accel;
 		float omega_max;
 		float omega_accel;
+		
+		//オフセット長さ
+		uint8_t R90_before;
+		uint8_t R90_after;
+		uint8_t L90_before;
+		uint8_t L90_after;
+
 	} params;
 	
 	typedef struct{
@@ -52,7 +60,7 @@
 		float test5[2000];
 		float test6[2000];
 	} data_array;
-	
+		
 	//----表示用LED関連----
 	#ifdef EXTERN										//対応ファイルでEXTERNが定義されている場合
 		/*グローバル変数の定義*/

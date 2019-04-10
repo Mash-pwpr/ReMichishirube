@@ -24,18 +24,18 @@ void Mtu3IcCmDIntFunc(void){		//パルス一周期でやると呼び出される
 	pin_write(P55,0);
 
 	//duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
-	duty_l = duty_fix_gain_L * (vpid_L + sen_dl + xpid_G - apid_G);
+	duty_l = duty_fix_gain_L * (vpid_L + sen_ctrl + xpid_G - apid_G);
 	if(duty_l < 0){
 		MF.FLAG.L_DIR = 0;					
 		duty_l = - duty_l;	
 	}else if(duty_l > 0){
-		MF.FLAG.L_DIR = 1;					
+		MF.FLAG.L_DIR = 1;				
 	}
 	
 	if(duty_l > 1){
 		duty_l = 0.70;
 	}else if(duty_l <= 0.01){
-		duty_l = 0.01;	
+		duty_l = 0.01;
 	}
 		
 		paraL0 = (1 - duty_l) * paraL1;									//デューティ逆計算
@@ -71,7 +71,7 @@ void Mtu4IcCmDIntFunc(void){			//右モータ制御関数
 	pin_write(PA6,0);
 
 	//duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
-	duty_r = duty_fix_gain_R * (vpid_R + sen_dr + xpid_G + apid_G);
+	duty_r = duty_fix_gain_R * (vpid_R - sen_ctrl + xpid_G + apid_G);
 	if(duty_r < 0){
 		MF.FLAG.R_DIR = 0;
 		duty_r = - duty_r;	
@@ -115,13 +115,25 @@ void Cmt1IntFunc(void){
 	switch(tp){
 	//タイマ内での分割処理
 	case 0:	
+		//オフセット値取得
+		S12AD.ADANS0.WORD = 0x02;
+		R_PG_ADC_12_StartConversionSW_S12AD0();					
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		wall_l.base = ad_res[1];
+		
+		//右壁センサ
+		S12AD.ADANS0.WORD = 0x08;
+		R_PG_ADC_12_StartConversionSW_S12AD0();
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		wall_r.base =  ad_res[3];
+	
 		//左壁センサ
 		pin_write(PE1,1);
 		stay(100);
 		S12AD.ADANS0.WORD = 0x02;
 		R_PG_ADC_12_StartConversionSW_S12AD0();					
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_l = ad_res[1] - ad_l_off;
+		wall_l.val = ad_res[1];
 		
 		//右壁センサ
 		pin_write(PE3,1);
@@ -129,18 +141,39 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x08;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_r =  ad_res[3];// - ad_r_off;
-		if((ad_r_off - ad_r) > 100){
+		wall_r.val =  ad_res[3] + 300;
+		
+		wall_r.dif = (int16_t)(wall_r.val - wall_r.base);
+		wall_l.dif = (int16_t)(wall_l.val - wall_l.base);	
+		
+/*		if((ad_r_off - ad_r) > 100){
 			MF.FLAG.WALL = 1;	
 		}
-		ad_r_off = ad_r;
-		
+*/		
 		break;
 		
 	case 1:
 		pin_write(PE1,0);
 		pin_write(PE3,0);
-				
+			
+		stay(100);
+		//オフセット値取得
+		S12AD.ADANS0.WORD = 0x01;
+		R_PG_ADC_12_StartConversionSW_S12AD0();
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		wall_fl.base = ad_res[0];
+		
+		S12AD.ADANS0.WORD = 0x04;
+		R_PG_ADC_12_StartConversionSW_S12AD0();
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		wall_ff.base = ad_res[2];
+
+		S12AD.ADANS0.WORD = 0x10;
+		R_PG_ADC_12_StartConversionSW_S12AD0();
+		R_PG_ADC_12_GetResult_S12AD0(ad_res);
+		wall_fr.base = ad_res[4];
+		
+		
 		//正面壁センサ
 		pin_write(PE0,1);
 		pin_write(PE2,1);
@@ -150,17 +183,23 @@ void Cmt1IntFunc(void){
 		S12AD.ADANS0.WORD = 0x01;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_fl = ad_res[0] - ad_fl_off;
+		wall_fl.val = ad_res[0];
 		
 		S12AD.ADANS0.WORD = 0x04;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_ff = ad_res[2] - ad_ff_off;
+		wall_ff.val = ad_res[2];
 
 		S12AD.ADANS0.WORD = 0x10;
 		R_PG_ADC_12_StartConversionSW_S12AD0();
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		ad_fr = ad_res[4] - ad_fr_off;
+		wall_fr.val = ad_res[4];
+		
+		wall_ff.dif = (int16_t)(wall_ff.val - wall_ff.base);
+		wall_fr.dif = (int16_t)(wall_fr.val - wall_fr.base);
+		wall_fl.dif = (int16_t)(wall_fl.val - wall_fl.base);
+
+		
 		break;
 		
 	case 2:
@@ -210,13 +249,30 @@ void Cmt1IntFunc(void){
 		}
 		
 		//壁制御フラグアリの場合
-		if(MF.FLAG.CTRL){
+		if(MF.FLAG.CTRL){			
 			//差をとる
-			dif_l = (int16_t)(ad_l - base_l);
-			dif_r = (int16_t)(ad_r - base_r);
-
-			//制御範囲との比較
-			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
+			wall_r.dif = (int16_t)(wall_r.val - wall_r.base);
+			wall_l.dif = (int16_t)(wall_l.val - wall_l.base);
+			//閾値の設定
+			//if(abs())
+			
+			//偏差を統合
+			if((wall_r.val > wall_r.threshold) && (wall_l.val > wall_l.threshold)){			//両方向に壁がある
+				dif_total = wall_l.dif - wall_r.dif;
+			}else if((wall_r.val < wall_r.threshold) && (wall_l.val < wall_l.threshold)){		//両方向に壁無し
+				dif_total = 0;	
+			}else if(wall_r.val > wall_r.threshold){						//右だけ壁アリ
+				dif_total = -2 * wall_r.dif;
+			}else{											//左だけ壁アリ
+				dif_total = 2 * wall_l.dif;	
+			}
+			
+			//偏差
+			sen_ctrl = gain_search1.wall_kp * dif_total;
+			
+			//制御範囲との比較		
+			
+/*			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
 				if(SREF_HALF_L < dif_l)
 				sen_dl = (float)dif_l * gain_now.wall_kp * CONT_FIX ;
 				else
@@ -237,16 +293,17 @@ void Cmt1IntFunc(void){
 		}else{
 			//そもそもフラグ無
 			sen_dl = sen_dr = 0;
-		}
+*/		}
 		
+
 /*		if(sen_dr > 0.05){
 			sen_dr = 0.05;
 		}
 		if(sen_dl > 0.15){
 			sen_dl = 0.05;
 		}
-*/		break;
-	}
+		break;
+*/	}
 
 	//====タスクポインタで分割処理====
 	tp = (tp+1) % 4;
@@ -278,32 +335,21 @@ void Cmt2IntFunc(){
 	totalR_mm = Kxr * (float)dif_pulse_counter_r;
 	totalL_mm = Kxr * (float)dif_pulse_counter_l;
 	
-	//物理量計算
-/*		if(dif_pulse_r != 0 ) {
-			xR = Kxr * dif_pulse_r;	//割込周期10[ms]での変位[mm]
-		} else {
-			xR = 0;
-		}
-		if(dif_pulse_l != 0 ){
-			xL = Kxr * dif_pulse_l;
-		} else {
-			xL = 0;
-		}
-*/	
+	//物理量計算	
 	//物理量で扱いやすいm/s = mm/msに変換
 	vel_G = (vel_R + vel_L) * 0.5;
 	totalG_mm = (totalR_mm + totalL_mm) * 0.5;
 	
 //センサログ用		
-/*		log.test1[time2] = totalG_mm;//angle_G, sen_dr;
-		log.test2[time2] = ad_l;//dif_angle, sen_dl;
+		log.test1[time2] = totalG_mm;//angle_G, sen_dr;
+		log.test2[time2] = wall_l.val;//dif_angle, sen_dl;
 	
-		log.test3[time2] = ad_ff;//angle_G;//ad_r, kvpR
-		log.test4[time2] = ad_r;//omega_G;//ad_l, kvdR
+		log.test3[time2] = wall_l.base;//angle_G;//ad_r, kvpR
+		log.test4[time2] = wall_r.val;//omega_G;//ad_l, kvdR
 	
-		log.test5[time2] = base_l;
-		log.test6[time2] = base_r;		
-*/		
+		log.test5[time2] = wall_r.base;
+		log.test6[time2] = dif_total;		
+	
 //並進速度ログ用		
 /*	log.test1[time2] = targ_vel;//angle_G, sen_dr;
 	log.test2[time2] = vel_omega;//dif_angle, sen_dl;
@@ -325,7 +371,7 @@ void Cmt2IntFunc(){
 		log.test6[time2] = vel_L;
 */
 //スラローム
-		log.test1[time2] = omega_direction * targ_omega;//angle_G, sen_dr;
+/*		log.test1[time2] = omega_direction * targ_omega;//angle_G, sen_dr;
 		log.test2[time2] = omega_G_rad;//dif_angle, sen_dl;
 	
 		log.test3[time2] = vel_R;//angle_G;//ad_r, kvpR
@@ -333,7 +379,7 @@ void Cmt2IntFunc(){
 	
 		log.test5[time2] = totalG_mm;
 		log.test6[time2] = angle_G;
-
+*/
 
 	//PIDしてみる？
 	if(MF.FLAG.WCTRL){

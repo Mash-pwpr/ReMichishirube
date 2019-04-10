@@ -110,7 +110,7 @@ void turn_R90(){
 void turn_SLA_R90(){
 	MF.FLAG.CTRL = 0;
 	set_dir(FORWARD);								//右に回転するようモータの回転方向を設定
-	driveA(SLA_OFFSET_B);
+	driveA(params_search1.R90_before);
 	
 	time = 0;
 	time2 = 0;
@@ -118,7 +118,7 @@ void turn_SLA_R90(){
 	driveW(-90);								//低速で指定パルス分回転。回転後に停止する
 	
 	MF.FLAG.CTRL = 0;
-	driveA(SLA_OFFSET_A);
+	driveA(params_search1.R90_after);
 	
 	get_wall_info();
 	
@@ -146,17 +146,20 @@ void turn_L90()
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void turn_SLA_L90(){
 	
-	time2 = 0;
+	//time2 = 0;
 	
 	MF.FLAG.CTRL = 0;
 	set_dir(FORWARD);							
-	driveA(SLA_OFFSET_B);							//offset　before区間走行
+	driveA(params_search1.L90_before);							//offset　before区間走行
+	//time2 = 0;
 	
 	MF.FLAG.CTRL = 0;
 	driveW(90);								//90までスラローム旋回
 	
 	MF.FLAG.CTRL = 0;
-	driveA(SLA_OFFSET_A);							//offset　after区間
+	driveA(params_search1.L90_after);							//offset　after区間
+	kwpG = 0;
+	kwiG = 0;
 	
 	get_wall_info();
 	
@@ -224,12 +227,13 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 	totalL_mm = 0;					//走行距離をリセット
 	totalG_mm = 0;
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+	
 	targ_angle = 0;
-	angle_G = 0;
+	//angle_G = 0;
 	
 	drive_start();					//走行開始
 	
-	//time = 0;
+	time = 0;
 	//----走行----
 	while(totalG_mm < dist){
 		if(time > 3000){
@@ -260,6 +264,8 @@ void driveD(uint16_t dist, unsigned char rs) {
 	float ics = totalG_mm;
 
 	//====走行====
+	MF.FLAG.CTRL = 0;
+	
 	//----走行開始----
 	MF.FLAG.ACTRL = 0;
 	MF.FLAG.WCTRL = 1;
@@ -501,37 +507,35 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	MF.FLAG.WACCL = 1;
 	MF.FLAG.WDECL = 0;
 	
-	drive_start();				//走行開始
+	drive_start();
 
 	angle_offset = (0.5 * maxindex_w * params_now.omega_max) * KWP;
 	//====回転====
-	if(omega_direction == 1){
-		//offsetA = STOP_OFF_ANGLE;
-		angle_offset = angle_offset * 0.70f;
-		while(angle_G + angle_offset + offsetA < theta);
+	if(omega_direction == 1){				//左旋回
+		
+		angle_offset = angle_offset * 1.10f;
+		while(angle_G + angle_offset < theta);
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-		kwpG = 0;
+/*		kwpG = 0;
 		kwiG = 0;
-
-		while(angle_G + offsetA < theta){
+*/		while(angle_G  < theta){
 			if(targ_omega == 0){
 				break;
 			}
 		}
-		
 	} else if(omega_direction == -1){
-		//offsetA = STOP_OFF_ANGLE;
-		angle_offset = angle_offset * 0.70f;
-		while(angle_G - angle_offset - offsetA > theta);
+		
+		angle_offset = angle_offset * 1.10f;		//右旋回
+		while(angle_G - angle_offset > theta);
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-		kwpG = 0;
+/*		kwpG = 0;
 		kwiG = 0;
-
-		while(angle_G - offsetA > theta){
+*/
+		while(angle_G > theta){
 			if(targ_omega == 0){
 				break;
 			}
@@ -541,10 +545,10 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	omega_direction = 0;
 	duty_fix_gain_R = 1.0;
 	duty_fix_gain_L = 1.0;
-	angle_G = 0;
+	//angle_G = 0;
 	kviR = kviL = 0;
-	kwpG = 0;
-	kwiG = 0;
+	kwpG = kwiG = 0;
+
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++

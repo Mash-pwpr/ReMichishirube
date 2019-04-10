@@ -75,15 +75,20 @@ int main(void) {
 
 //	turn_R90();
 //	driveD(0,1);
+//	MF.FLAG.CTRL = 1;
+	//ms_wait(10);
+//	auto_Calibration(0.5,0.5);
+//	ms_wait(1000);
+//	driveA(SET_MM + 90);
+//	turn_SLA_R90();
+//	turn_SLA_L90();
 
-	driveA(90);
-	turn_SLA_L90();
 /*	while(1){
-		driveA(180);
-		turn_SLA_L90();
+		driveA(180 * 3);
+		turn_SLA_L90();			
 	}	
 */		
-	driveD(90,1);
+//	driveD(90,1);
 //	turn_SLA_L90();
 	
 /* サーキット専用プログラム	
@@ -120,10 +125,10 @@ int main(void) {
 			ms_wait(500);
 			uart_printf("START\r\n");
 			
-			uart_printf("base:%d, %d\r\n", base_r, base_l);
+			uart_printf("base:%d, %d\r\n", wall_l.threshold, wall_r.threshold);
 			//offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
 			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
-			for(i=0;i<1000;i++){
+			for(i=0;i<2000;i++){
 				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",log.test1[i],log.test2[i],log.test3[i],log.test4[i],log.test5[i],log.test6[i]);
 				ms_wait(1);
 			}
@@ -273,32 +278,8 @@ int main(void) {
 		default:
 			Wait;
 			val_Init();
-			MF.FLAG.CTRL = 1;	//制御許可
 			start_wait();
-			R_PG_Timer_StartCount_CMT_U0_C1();
-			get_base();
-			while(1){
-				pins_write(DISP_LEDS, 0, LED_NUM);											//pins_write()はport.cに関数定義あり
-				uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d ", ad_l, ad_fl, ad_ff, ad_fr, ad_r);
-				uart_printf(" | dif_l: %4d dif_r:%4d\r\n", dif_l, dif_r);
-				//----LEDが4つの場合----
-				if(ad_fr > WALL_BASE_F){
-					// ここ、ad_lになってましたよ！！
-					pin_write(DISP_LEDS[0], ON);											//pin_write()はport.cに関数定義あり
-				}
-				if(ad_r > WALL_BASE_R){
-					pin_write(DISP_LEDS[1], ON);
-				}
-				if(ad_l > WALL_BASE_L){
-					pin_write(DISP_LEDS[2], ON);
-				}
-				if(ad_fl > WALL_BASE_F){
-					pin_write(DISP_LEDS[3], ON);
-				}
-				ms_wait(1000);
-
-			}
-			MF.FLAG.CTRL = 0;
+			sensor_check();
 			ms_wait(100);
 			break;
 		}

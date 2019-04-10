@@ -53,21 +53,18 @@ void sensor_Init(void){
 	//センサ発光部初期設定
 	R_PG_IO_PORT_Set_PE();
 	
-	
-	
 }
 
 // センサ系，走行系，探索系　の変数初期化
 void val_Init(void){
 	int i;
 	float val1 = 0;
-	float val2 = 0;
-	float val3 = 0;
 	//----センサ系----
 	tp = 0;
-	ad_l = ad_r = ad_ff = ad_fr = ad_fl = 0;
-	ad_r_off = ad_fr_off = ad_ff_off = ad_fl_off = ad_l_off = 0;
-	base_l = base_r = 0;
+	wall_l.dif = wall_r.dif = wall_fl.dif = wall_fr.dif = wall_ff.dif = 0;
+	wall_l.val = wall_r.val = wall_fl.val = wall_fr.val = wall_ff.val = 0;
+	wall_l.base = wall_r.base = wall_fl.base = wall_fr.base = wall_ff.base = 0;
+	wall_l.threshold = wall_r.threshold = wall_fl.threshold = wall_fr.threshold = wall_ff.threshold = 0;
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
 	pulse_flag_l = pulse_flag_r = 0;
 	time = time2 = 0;
@@ -86,12 +83,17 @@ void val_Init(void){
 	vpid_R = vpid_L = xpid_R = xpid_L = apid_G = wpid_G = 0;
 	
 	//パラメータ設定
-	params_search1.vel_max = 0.50f;				//単位はm/s, mm/ms
-	params_search1.accel = 4.0f;				//単位はm/s/s
+	params_search1.vel_max = 0.50f;						//単位はm/s, mm/ms
+	params_search1.accel = 4.0f;						//単位はm/s/s
 	
-	val1 = HALF_MM / params_search1.vel_max * 0.001; 		//並進速度で半区画進む時間[s]
-	params_search1.omega_max = 1.5 * Pi / 2 / val1;	//最高角速度[rad/s]
-	params_search1.omega_accel = 3 * params_search1.omega_max / val1; //角加速度[rad/s/s]
+	val1 = HALF_MM / params_search1.vel_max * 0.001; 			//並進速度で半区画進む時間[s]
+	params_search1.omega_max = 1.5 * Pi / 2 / val1;				//最高角速度[rad/s]
+	params_search1.omega_accel = 3 * params_search1.omega_max / val1; 	//角加速度[rad/s/s]
+	
+	params_search1.R90_before = 35;
+	params_search1.R90_after = 45;
+	params_search1.L90_before = 35;
+	params_search1.L90_after = 50;
 	
 /*	uart_printf("tim is %lf\r\n", val1);
 	uart_printf("omega is %lf\r\n", val2);
@@ -107,8 +109,8 @@ void val_Init(void){
 	gain_search1.vel_kpL = 14.0f;			
 	gain_search1.vel_kiR = 0.05f;		//0.05
 	gain_search1.vel_kiL = 0.05f;
-	gain_search1.omega_kp = 1.3f;	//0.8
-	gain_search1.omega_ki = 0.11f;		//0.15
+	gain_search1.omega_kp = 3.0f;	//1.3
+	gain_search1.omega_ki = 0.3f;		//0.11
 	gain_search1.wall_kp = 0.002f;
 	
 	setting_params(params_search1);

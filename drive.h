@@ -4,9 +4,6 @@
  Copyright   : Copyright (C) 早稲田大学マイクロマウスクラブ
  Description : 走行関連の関数たちです．
 
-  更新履歴
- 2015/12/11		山上	コメントとSLA7078用のマクロを追加
- 2016/2/24		山上	2016年度用にピン設定を変更
 ==============================================================
 */
 
@@ -33,9 +30,9 @@
 
 
 	//====変数====
-#ifdef EXTERN										//対応ファイルでEXTERNが定義されている場合
+#ifdef EXTERN								//対応ファイルでEXTERNが定義されている場合
 	volatile float vel_R, vel_L,vel_G,xR, xL,xG;			//現在速度，距離変化
-	volatile float targ_vel, max_vel_G;			//目標速度
+	volatile float targ_vel, max_vel_G;				//目標速度
 	volatile float targ_total_mm;					//制止するための目標距離
 	
 	/***速度のPID計算用***/
@@ -67,11 +64,11 @@
 	volatile float apid_G; 
 	
 	volatile uint16_t time,time2, ms_time;				//
-	volatile float minindex, maxindex,maxindex_w;		//最低速度・最大速度・最大角速度？
+	volatile float minindex, maxindex,maxindex_w;		//時間・加速必要時間・角加速必要時間？
 
 	volatile float duty_fix_gain_R,duty_fix_gain_L;			//旋回時の残留偏差消すための補正係数
 	
-	volatile float duty_r,duty_l;			//Duty比計算と計算オーバー用のバッファ
+	volatile float duty_r,duty_l;					//Duty比計算と計算オーバー用のバッファ
 	volatile float Kvolt,Kxr;					//加速度計算するための電流定数，距離変換のための定数
 	volatile float accel;						//目標加速度？
 		

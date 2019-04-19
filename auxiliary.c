@@ -171,7 +171,7 @@ void start_wait(){
 	uart_printf("Ready???\r\n");
 	
 	while(1){
-		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", wall_l.val,wall_fl.val, wall_ff.val, wall_fl.val, wall_l.val);
+		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d\r\n ", wall_l.val,wall_fl.val, wall_ff.val, wall_fr.val, wall_r.val);
 		if(wall_ff.val > WALL_START){
 			melody(e6,300);
 			melody(f6,300);
@@ -202,7 +202,7 @@ void start_ready(void){
 	//GYRO_OFFSET(1000);
 	
 	melody(c6,1000);
-	auto_Calibration(0.50,0.75);
+	auto_Calibration(0.30,0.60);
 	driveA(SET_MM);
 }
 
@@ -221,11 +221,18 @@ void setting_gain(gain instance){
 	gain_now.omega_kp = instance.omega_kp;
 	gain_now.omega_ki = instance.omega_ki;
 	gain_now.wall_kp = instance.wall_kp;
+	gain_now.wall_kd = instance.wall_kd;
 }
 
-void auto_Calibration(float constant_r, float constant_l){
+void auto_Calibration(float constant_l, float constant_r){
 	wall_l.threshold = (uint16_t)(wall_l.dif * constant_l);
-	//wall_base_ff = ad_ff * constant;
+	wall_ff.threshold = WALL_BASE_F;
 	wall_r.threshold = (uint16_t)(wall_r.dif * constant_r);
 	uart_printf("threshold %d, %d :: dif %d, %d\r\n",wall_l.threshold, wall_r.threshold, wall_l.dif, wall_r.dif);
+}
+
+void ctrl_zero(){
+	MF.FLAG.CTRL = 0;
+	sen_ctrl = 0;
+	pre_dif_total = 0;
 }

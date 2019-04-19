@@ -107,7 +107,7 @@ void sensor_start(){
 	R_PG_Timer_StartCount_MTU_U0_C1();	//エンコーダ左右
 	R_PG_Timer_StartCount_MTU_U0_C2();
 	
-	R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
+	//R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
 	R_PG_Timer_StartCount_CMT_U1_C2();	//エンコーダ処理，PID計算用タイマ
 	
 }
@@ -131,7 +131,7 @@ void sensor_check(){
 	get_base();
 	while(1){
 		pins_write(DISP_LEDS, 0, LED_NUM);											//pins_write()はport.cに関数定義あり
-		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d ", wall_r.dif, wall_fr.dif, wall_ff.dif, wall_fr.dif, wall_r.dif);
+		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d \r\n", wall_l.dif, wall_fl.dif, wall_ff.dif, wall_fr.dif, wall_r.dif);
 		//uart_printf(" | dif_l: %4d dif_r:%4d\r\n", wall_r., dif_r);
 	//----LEDが4つの場合----
 		if(wall_fr.dif > wall_fr.threshold){

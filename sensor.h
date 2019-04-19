@@ -24,6 +24,9 @@
 		int16_t val;			//LEDがONの時の値
 		int16_t base;			//LEDがOFFの時の値
 		int16_t dif;			//差分
+		int16_t pre;			//前回のやつ
+		int16_t diff;			//微分
+		
 		uint16_t threshold;	//壁判断閾値	
 	}wall_sensor;
 	
@@ -51,19 +54,16 @@
 		
 		//----その他----
 		unsigned char tp;											//タスクポインタ
-/*		volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;						//A-D値格納
-		volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
-		
-		volatile int16_t wall_base_l, wall_base_ff, wall_base_r;
-		
-*/		volatile uint16_t ad_res[5],ad_pre_res[5];
+		volatile uint16_t ad_res[5],ad_pre_res[5];
 		
 		volatile uint16_t base_l, base_r;								//基準値を格納
 		volatile int16_t dif_l, dif_r;									//AD値と基準との差
 		
 		volatile float volt_bat;									//電源電圧監視
 		volatile float cont_r,cont_l;									//壁制御の比例定数
+		
 		volatile float dif_total;
+		volatile float pre_dif_total;									//壁のPD制御用
 		volatile float sen_ctrl;
 		
 		volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
@@ -86,10 +86,7 @@
 		
 		//----その他----
 		extern unsigned char tp;
-/*		extern volatile int16_t ad_r, ad_fr, ad_ff, ad_fl, ad_l;
-		extern volatile int16_t ad_r_off, ad_fr_off, ad_ff_off, ad_fl_off,ad_l_off;
-		extern volatile int16_t wall_base_l, wall_base_ff, wall_base_r;
-	*/	extern volatile uint16_t ad_res[5],ad_pre_res[5];
+		extern volatile uint16_t ad_res[5],ad_pre_res[5];
 		extern volatile uint16_t base_l, base_r;
 		extern volatile int16_t dif_l, dif_r;
 		extern volatile float volt_bat;
@@ -97,6 +94,7 @@
 		
 		extern volatile float cont_r,cont_l;
 		
+		extern volatile float pre_dif_total;
 		extern volatile float dif_total;
 		extern volatile float sen_ctrl;
 		

@@ -50,6 +50,7 @@
 		float omega_kp;
 		float omega_ki;
 		float wall_kp;
+		float wall_kd;
 	} gain;
 	
 	typedef struct{
@@ -103,5 +104,7 @@
 	void auto_Calibration(float,float);
 	void setting_params(params);
 	void setting_gain(gain);
+	
+	void ctrl_zero();
 
 #endif /* AUXILIARY_H_ */

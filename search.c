@@ -51,36 +51,40 @@ void searchA(){												//一次走行　一番基本的な初期装備
 			case 0x44:
 				turn_R90();									//右回転
 				if(wall_l.dif > wall_l.threshold){
-					set_position();
+					set_position(1);
 				}
 				turn_dir(DIR_TURN_R90);						//マイクロマウス内部位置情報でも右回転処理
 				Wait;										//安定するまで待機
 				set_dir(FORWARD);
-				melody(920,500);
+				//melody(920,500);
 				break;
 			//----180回転----
 			case 0x22:
 				turn_180();							//180度回転
 				if(wall_ff.dif > wall_ff.threshold){
-					set_position();
+					set_position(1);
 				}
 				turn_dir(DIR_TURN_180);						//マイクロマウス内部位置情報でも180度回転処理
 				Wait;								//安定するまで待機
 				set_dir(FORWARD);
-				melody(1320,500);
+				//melody(1320,500);
 				break;
 			//----左折----
 			case 0x11:
 				turn_L90();									//左回転
 				if(wall_r.dif > wall_ff.threshold){
-					set_position();
+					set_position(1);
 				}
 				turn_dir(DIR_TURN_L90);						//マイクロマウス内部位置情報でも左回転処理
 				Wait;										//安定するまで待機
 				set_dir(FORWARD);
-				melody(720,500);
+				//melody(720,500);
 				break;
 		}
+/*		uart_printf("time = %d, wall_l = %d, wall_ff = %d, wall_r = %d\r\n",time2, wall_l.dif, wall_ff.dif, wall_r.dif);
+		uart_printf("route is %2x, threshold_l = %d, threthreshold_r = %d\r\n", route[r_cnt - 1], wall_l.threshold, wall_r.threshold);
+		ms_wait(500);
+*/		
 		a_section();										//前進する
 		adv_pos();										//マイクロマウス内部位置情報でも前進処理
 		conf_route_NESW();										//最短経路で進行可能か判定
@@ -141,11 +145,11 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				Wait;
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
-/*				if(MF.FLAG.SET ){
-					set_position();
+				if(MF.FLAG.SET ){
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-*/				half_sectionA();
+				half_sectionA();
 				break;
 			//----180回転----
 			case 0x22:
@@ -159,7 +163,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				set_dir(FORWARD);
 
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
 				MF.FLAG.CTRL = 0;
@@ -168,19 +172,19 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				break;
 			//----左折----
 			case 0x11:
-/*				if(ad_r > WALL_BASE_R + WALL_OFF){
+				if(wall_r.dif > wall_r.threshold + WALL_OFF){
 					MF.FLAG.SET = 1;
 				}
-*/				half_sectionD();
+				half_sectionD();
 				turn_L90();
 				Wait;
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
-/*				if(MF.FLAG.SET){
-					set_position();
+				if(MF.FLAG.SET){
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-*/				half_sectionA();			
+				half_sectionA();			
 				break;
 		}
 
@@ -243,7 +247,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
 				half_sectionA();
@@ -260,7 +264,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 				set_dir(FORWARD);
 
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
 				half_sectionA();
@@ -276,7 +280,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(1);
 					MF.FLAG.SET = 0;
 				}
 				half_sectionA();
@@ -344,7 +348,7 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 				set_dir(FORWARD);
 
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(0);
 					MF.FLAG.SET = 0;
 				}
 				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
@@ -420,7 +424,7 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 				set_dir(FORWARD);
 
 				if(MF.FLAG.SET){
-					set_position();
+					set_position(0);
 					MF.FLAG.SET = 0;
 				}
 				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標

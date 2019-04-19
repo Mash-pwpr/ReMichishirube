@@ -46,33 +46,26 @@ int main(void) {
 //	melody(c6h,1000);		
 	set_dir(FORWARD);
 	
-	
-	
 /*	start_wait();
 	GYRO_OFFSET(1000);
 */	
 	sensor_start();
 //	start_wait();
 	
-	/*宴会芸モード*/
-/*	MF.FLAG.ACTRL = 0;
-	MF.FLAG.VCTRL = 1;
-	MF.FLAG.WCTRL = 1;
-	MF.FLAG.XCTRL = 0;
-
-	MF.FLAG.ACCL = 0;
-	MF.FLAG.DECL = 0;
-	drive_start();
-	while(1);
-*/	
-
 /*	MF.FLAG.CTRL = 0;
 	time = time2 = 0;
 	driveA(100);
 	driveD(100,1);
 */
-//	turn_180();
 
+	time = time2 = 0;
+/*	MF.FLAG.CTRL = 0;
+	driveA(90 + SET_MM);
+	driveA(180);
+	driveA(180);
+	MF.FLAG.CTRL = 0;
+	driveD(90,1);	
+*/
 //	turn_R90();
 //	driveD(0,1);
 //	MF.FLAG.CTRL = 1;
@@ -108,10 +101,7 @@ int main(void) {
 	half_sectionD();
 */	
 	sensor_stop();
-/*	melody(1320,300);
-	melody(1397,300);
-	melody(1568,300);
-*/
+
 	while(1){ // Main Loop
 		uart_printf("Hello, World!\r\n");	
 		//====モードセレクト====
@@ -126,7 +116,6 @@ int main(void) {
 			uart_printf("START\r\n");
 			
 			uart_printf("base:%d, %d\r\n", wall_l.threshold, wall_r.threshold);
-			//offsetA = max_omega_G * maxindex * 9 * 0.01 / 3.1415;
 			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
 			for(i=0;i<2000;i++){
 				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",log.test1[i],log.test2[i],log.test3[i],log.test4[i],log.test5[i],log.test6[i]);
@@ -161,14 +150,14 @@ int main(void) {
 			start_ready();
 			
 			searchSA();
-/*			goal_x = goal_y = 0;
+			goal_x = goal_y = 0;
 			searchSA();
-*/			goal_x = GOAL_X;
+			goal_x = GOAL_X;
 			goal_y = GOAL_Y;
 
-			//turn_180();									//180度回転
+			turn_180();									//180度回転
 			sensor_stop();
-			//turn_dir(DIR_TURN_180);
+			turn_dir(DIR_TURN_180);
 			break;
 
 			/////////////////////////////////　　↓の二次探索走行とスラローム走行は未実装
@@ -251,22 +240,22 @@ int main(void) {
 		case 13:
 			Wait;
 			start_wait();
-			MF.FLAG.ACTRL = 1;
-			MF.FLAG.VCTRL = 0;
-			MF.FLAG.WCTRL = 0;
+			
+			/*宴会芸モード*/
+			MF.FLAG.ACTRL = 0;
+			MF.FLAG.VCTRL = 1;
+			MF.FLAG.WCTRL = 1;
 			MF.FLAG.XCTRL = 0;
-			MF.FLAG.CTRL = 0;
-	
+
 			MF.FLAG.ACCL = 0;
 			MF.FLAG.DECL = 0;
-	
-			targ_angle = 0;
-
-			set_dir(FORWARD);
-			sensor_start();
+			MF.FLAG.WACCL = 0;
+			MF.FLAG.WDECL = 0;
+			
+			targ_vel = 0;
+			targ_omega = 0;
+			
 			drive_start();
-	
-
 			while(1){
 				uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n",angle_G, dif_angle, apid_G);
 				ms_wait(100);
@@ -284,6 +273,7 @@ int main(void) {
 			break;
 		}
 		ms_wait(100);
+		sensor_stop();
 
 	}
 

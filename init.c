@@ -90,7 +90,7 @@ void val_Init(void){
 	params_search1.omega_max = 1.5 * Pi / 2 / val1;				//最高角速度[rad/s]
 	params_search1.omega_accel = 3 * params_search1.omega_max / val1; 	//角加速度[rad/s/s]
 	
-	params_search1.R90_before = 35;
+	params_search1.R90_before = 30;		//35
 	params_search1.R90_after = 45;
 	params_search1.L90_before = 35;
 	params_search1.L90_after = 50;
@@ -111,7 +111,8 @@ void val_Init(void){
 	gain_search1.vel_kiL = 0.05f;
 	gain_search1.omega_kp = 3.0f;	//1.3
 	gain_search1.omega_ki = 0.3f;		//0.11
-	gain_search1.wall_kp = 0.002f;
+	gain_search1.wall_kp = 0.010f;
+	gain_search1.wall_kd = 0.001f;
 	
 	setting_params(params_search1);
 	setting_gain(gain_search1);
@@ -185,13 +186,13 @@ void batt_Check(uint16_t num){
 		S12AD.ADANS0.WORD = 0x40;
 		R_PG_ADC_12_StartConversionSW_S12AD0();					
 		R_PG_ADC_12_GetResult_S12AD0(ad_res);
-		volt_bat += ad_res[6];
 		ms_wait(1);
+		volt_bat += ad_res[6];
 	}
 	
 	volt_bat = volt_bat / num;
 
-	if(volt_bat < 2500 && 1500 < volt_bat){
+	if(volt_bat < 3000 && 1500 < volt_bat){
 		melody(1320,500);
 		melody(1120,500);
 		melody(920,500);

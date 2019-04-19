@@ -139,7 +139,6 @@
 	void driveA(float);	//加速走行
 	void driveD(uint16_t, unsigned char);	//減速走行
 	void driveAD(float);	//加減速走行
-	void driveU(uint16_t, unsigned char);	//使ってない
 	void driveC(uint16_t, unsigned char);	//定時間走行，セッポジぐらいしか使ってない
 	void driveX(uint16_t);			//位置・角度制御走行
 	void driveW(int16_t);			//角速度制御走行
@@ -159,7 +158,7 @@
 	void turn_R90();		//右90回転
 	void turn_L90();		//左90回転
 	void turn_180();		//180度回転
-	void set_position();		//位置合わせ
+	void set_position(uint8_t);		//位置合わせ
 	
 	void turn_SLA_R90();
 	void turn_SLA_L90();

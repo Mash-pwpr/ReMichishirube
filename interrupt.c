@@ -112,6 +112,9 @@ void Mtu4IcCmCIntFunc(void){
 // ???l?F????
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void Cmt1IntFunc(void){	
+	int r_threshold = 0;
+	int l_threshold = 0;
+	
 	switch(tp){
 	//タイマ内での分割処理
 	case 0:	
@@ -144,12 +147,18 @@ void Cmt1IntFunc(void){
 		wall_r.val =  ad_res[3] + 300;
 		
 		wall_r.dif = (int16_t)(wall_r.val - wall_r.base);
-		wall_l.dif = (int16_t)(wall_l.val - wall_l.base);	
+		wall_l.dif = (int16_t)(wall_l.val - wall_l.base);
 		
-/*		if((ad_r_off - ad_r) > 100){
-			MF.FLAG.WALL = 1;	
+		wall_r.diff = wall_r.pre - wall_r.dif;
+		wall_l.diff = wall_l.pre - wall_l.dif;
+		
+		if(wall_r.diff > 8 || wall_l.diff){
+			MF.FLAG.WALL = 1;
 		}
-*/		
+		
+		wall_r.pre = wall_r.dif;
+		wall_l.pre = wall_l.dif;
+				
 		break;
 		
 	case 1:
@@ -199,6 +208,7 @@ void Cmt1IntFunc(void){
 		wall_fr.dif = (int16_t)(wall_fr.val - wall_fr.base);
 		wall_fl.dif = (int16_t)(wall_fl.val - wall_fl.base);
 
+		
 		
 		break;
 		
@@ -250,60 +260,40 @@ void Cmt1IntFunc(void){
 		
 		//壁制御フラグアリの場合
 		if(MF.FLAG.CTRL){			
-			//差をとる
-			wall_r.dif = (int16_t)(wall_r.val - wall_r.base);
-			wall_l.dif = (int16_t)(wall_l.val - wall_l.base);
 			//閾値の設定
-			//if(abs())
+			if(abs(wall_r.diff) > 8){
+				r_threshold = wall_r.threshold + 10;	
+			}else{
+				r_threshold = wall_r.threshold;	
+			}
+			if(abs(wall_l.diff) > 8){
+				l_threshold = wall_l.threshold + 10;	
+			}else{
+				l_threshold = wall_l.threshold;	
+			}
 			
 			//偏差を統合
-			if((wall_r.val > wall_r.threshold) && (wall_l.val > wall_l.threshold)){			//両方向に壁がある
+			if((wall_r.val > r_threshold) && (wall_l.val > l_threshold)){			//両方向に壁がある
 				dif_total = wall_l.dif - wall_r.dif;
-			}else if((wall_r.val < wall_r.threshold) && (wall_l.val < wall_l.threshold)){		//両方向に壁無し
+			}else if((wall_r.val < r_threshold) && (wall_l.val < l_threshold)){		//両方向に壁無し
 				dif_total = 0;	
-			}else if(wall_r.val > wall_r.threshold){						//右だけ壁アリ
+			}else if(wall_r.val > r_threshold){						//右だけ壁アリ
 				dif_total = -2 * wall_r.dif;
 			}else{											//左だけ壁アリ
 				dif_total = 2 * wall_l.dif;	
 			}
 			
 			//偏差
-			sen_ctrl = gain_search1.wall_kp * dif_total;
+			sen_ctrl = gain_search1.wall_kp * dif_total + gain_search1.wall_kd * (pre_dif_total - dif_total);
+			pre_dif_total = dif_total;
 			
-			//制御範囲との比較		
-			
-/*			if((SREF_MIN_L < dif_l) && (dif_l < SREF_MAX_L)){
-				if(SREF_HALF_L < dif_l)
-				sen_dl = (float)dif_l * gain_now.wall_kp * CONT_FIX ;
-				else
-				sen_dl = (float)dif_l * gain_now.wall_kp;
-			}else{
-				sen_dl = 0;	//範囲外なら０に
+			if(targ_vel < 0.2){
+				sen_ctrl = 0;	
 			}
+		}
 			
-			if((SREF_MIN_R < dif_r) && (dif_r < SREF_MAX_R)){
-				if(SREF_HALF_R < dif_r)
-				sen_dr = (float)dif_r * gain_now.wall_kp * CONT_FIX;
-				else
-				sen_dr = (float)dif_r * gain_now.wall_kp;
-			}else{
-				sen_dr = 0;
-			}
-			//sen_dl = sen_dr = 0;
-		}else{
-			//そもそもフラグ無
-			sen_dl = sen_dr = 0;
-*/		}
-		
-
-/*		if(sen_dr > 0.05){
-			sen_dr = 0.05;
-		}
-		if(sen_dl > 0.15){
-			sen_dl = 0.05;
-		}
-		break;
-*/	}
+			
+	}
 
 	//====タスクポインタで分割処理====
 	tp = (tp+1) % 4;
@@ -341,7 +331,7 @@ void Cmt2IntFunc(){
 	totalG_mm = (totalR_mm + totalL_mm) * 0.5;
 	
 //センサログ用		
-		log.test1[time2] = totalG_mm;//angle_G, sen_dr;
+/*		log.test1[time2] = totalG_mm;//angle_G, sen_dr;
 		log.test2[time2] = wall_l.val;//dif_angle, sen_dl;
 	
 		log.test3[time2] = wall_l.base;//angle_G;//ad_r, kvpR
@@ -349,7 +339,7 @@ void Cmt2IntFunc(){
 	
 		log.test5[time2] = wall_r.base;
 		log.test6[time2] = dif_total;		
-	
+*/	
 //並進速度ログ用		
 /*	log.test1[time2] = targ_vel;//angle_G, sen_dr;
 	log.test2[time2] = vel_omega;//dif_angle, sen_dl;
@@ -388,22 +378,9 @@ void Cmt2IntFunc(){
 		kwpG = gain_now.omega_kp * dif_omega * TREAD_mm * 0.5 * 0.001;
 		kwiG += gain_now.omega_ki * dif_omega * TREAD_mm * 0.5 * 0.001;
 		vel_omega = kwpG + kwiG;		
-/*		//偏差の計算
-		dif_omega = (W_dir * targ_omega[t_cnt_w]) - omega_G_rad;
-		//偏差のP制御
-		kwpG = W_KP * dif_omega;				
-		//偏差のD制御
-		kwdG = W_KD * (dif_omega - dif_pre_omega);
-		//偏差のI制御
-		kwiG = W_KI * dif_omega;
-		//PID制御値を統合
-		wpid_G = kwpG + kwiG;// + kwdG );
-		//現在の偏差をバッファに保存 D制御で使う
-		dif_pre_omega = dif_omega;		
-*/	}else{
+	}else{
 		vel_omega = 0;
 	}
-	
 	
 	if(MF.FLAG.VCTRL){
 		//偏差の計算
@@ -453,8 +430,7 @@ void Cmt2IntFunc(){
 		dif_pre_x_G = dif_x_G;
 	}else{
 		xpid_G = 0;
-	}
-	
+	}	
 }
 
 //カウンタ値のオーバーフロー（インクリメント），アンダーフロー(デクリメント)回数をカウント

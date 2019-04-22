@@ -149,8 +149,7 @@
 	void drive_stop(unsigned char);
 
 	//----簡易上位関数----
-	void half_sectionA();		//加速半区画
-	void half_sectionA2();
+	void half_sectionA(int16_t, int16_t);		//加速半区画,第一引数でGetWallInfo, 第二引数でCTRLのオンオフ
 	void half_sectionD();		//減速半区画
 	void a_section();		//加減速一区画
 	void a_sectionU();		//等速一区画

@@ -125,6 +125,11 @@
 #define WALL_BASE_R 350 //700		//右壁 300    400
 #define WALL_OFF 200	//尻当て用の補正
 
+#define GET_WALL_ON 1
+#define GET_WALL_OFF 0
+#define CTRL_ON 1
+#define CTRL_OFF 0
+
 #define WALL_OFFSET 0	//閾値のオフセット
 #define WALL_START 3000
 

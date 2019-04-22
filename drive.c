@@ -35,17 +35,13 @@
 // 引数：なし
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
-void half_sectionA()
+void half_sectionA(int16_t wall, int16_t ctrl)
 {
-	MF.FLAG.CTRL = 1;
+	MF.FLAG.CTRL = ctrl;
 	driveA(HALF_MM);									//半区画のパルス分加速しながら走行。走行後は停止しない
-	get_wall_info();										//壁情報を取得
-}
-
-void half_sectionA2()
-{
-	MF.FLAG.CTRL = 1;										//制御を有効にする
-	driveA(HALF_MM);									//半区画のパルス分加速しながら走行。走行後は停止しない
+	if(wall){
+		get_wall_info();		//壁情報を取得
+	}
 }
 
 
@@ -70,13 +66,13 @@ void half_sectionD()
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void a_section()
 {
-	half_sectionA();			//半区画分加速走行
+	half_sectionA(GET_WALL_ON, CTRL_ON);			//半区画分加速走行
 	half_sectionD();										
 }
 
 void s_section(){
-	half_sectionA2();			//半区画分加速走行
-	half_sectionA();									
+	half_sectionA(GET_WALL_OFF, CTRL_ON);			//半区画分加速走行
+	half_sectionA(GET_WALL_ON, CTRL_ON);									
 	
 }
 
@@ -217,8 +213,9 @@ void set_position(uint8_t flag)
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //DC用に改造しているdriveA,距離はオッケー
 void driveA(float dist) {					//引数　走行距離　停止の有無（1で停止，０で継続走行）,vel0とtimeは触れていない
-
-	uint16_t flag = 0; 
+	uint16_t flag = 0;
+	float ics1 = totalG_mm;
+	
 	//====走行====
 	//----走行開始----
 	//MF.FLAGS = 0x00 | (MF.FLAGS & 0x0F);					//減速・定速・ストップフラグを0に、加速フラグを1にする
@@ -235,24 +232,23 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 	MF.FLAG.FFCTRL = 0;
 	
 	//走行距離をリセット
-	totalR_mm = 0;
+/*	totalR_mm = 0;
 	totalL_mm = 0;
 	totalG_mm = 0;
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
-	
+*/	
 	targ_angle = 0;
-	
 	drive_start();					//走行開始
 	
 	time = 0;
 	//----走行----
-	while(totalG_mm < dist){
+	while(totalG_mm < dist + ics1){
 		if(time > 3000){
 			break;
 		}
 		if(MF.FLAG.WALL && flag == 0){
-			dif_pulse_counter_r = (dist - 60) / Kxr;
-			dif_pulse_counter_l = (dist - 60) / Kxr;
+			dif_pulse_counter_r = (dist + ics1 - 40) / Kxr;
+			dif_pulse_counter_l = (dist + ics1 - 40) / Kxr;
 			MF.FLAG.WALL = 0;
 			flag = 1;
 		}
@@ -316,6 +312,10 @@ void driveD(uint16_t dist, unsigned char rs) {
 	//uart_printf("Finish is %f\r\n",totalG_mm);
 	//----停止措置----
 	drive_stop(rs);											//走行終了、停止許可があれば停止
+
+	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+
 	kviR = kviL = 0;
 	kwpG = 0;
 	kwiG = 0;
@@ -356,10 +356,6 @@ void driveAD(float theta)
 	MF.FLAG.WDECL = 0;
 	MF.FLAG.ACCL = 0;
 	MF.FLAG.DECL = 0;
-
-	//走行距離をリセット
-	totalG_mm = totalR_mm = totalL_mm = 0;		
-	dif_pulse_counter_r = dif_pulse_counter_l = 0;
 	
 	angle_G = 0;
 	angle_offset = (0.5 * maxindex_w * params_now.omega_max) * KWP;	//減速に必要な角度の絶対値計算
@@ -394,6 +390,8 @@ void driveAD(float theta)
 		}
 	}
 	
+	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	dif_pulse_counter_r = dif_pulse_counter_l = 0;
 	
 	//----停止許可があれば停止----
 	drive_stop(1);	
@@ -466,6 +464,7 @@ void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可�
 
 	drive_start();											//走行開始
 	
+	time = 0;
 	//====回転====
 	while(time < dist);			//一定時間経過まで待機
 
@@ -475,8 +474,11 @@ void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可�
 	}
 	//----停止許可があれば停止----
 	drive_stop(rs);											//走行終了、停止許可があれば停止
-	
 	targ_vel = 0;
+	
+	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+
 	
 	kviR = kviL = 0;
 	kwpG = 0;
@@ -559,6 +561,10 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	omega_direction = 0;
 	duty_fix_gain_R = 1.0;
 	duty_fix_gain_L = 1.0;
+	
+	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+
 	//angle_G = 0;
 	kviR = kviL = 0;
 	kwpG = kwiG = 0;

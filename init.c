@@ -111,8 +111,8 @@ void val_Init(void){
 	gain_search1.vel_kiL = 0.05f;
 	gain_search1.omega_kp = 3.0f;	//1.3
 	gain_search1.omega_ki = 0.3f;		//0.11
-	gain_search1.wall_kp = 0.010f;
-	gain_search1.wall_kd = 0.001f;
+	gain_search1.wall_kp = 0.015f;
+	gain_search1.wall_kd = 0.002f;
 	
 	setting_params(params_search1);
 	setting_gain(gain_search1);

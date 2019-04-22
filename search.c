@@ -114,7 +114,6 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 	make_route_NESW();											//最短経路探索(route配列に動作が格納される)
 
 	sensor_start();
-	uart_printf("Michishirube\r\n");
 	set_dir(FORWARD);
 	
 	if(wall_ff.dif > wall_ff.threshold){
@@ -124,7 +123,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 		set_dir(FORWARD);
 	}
 	
-	half_sectionA();
+	half_sectionA(GET_WALL_ON,CTRL_OFF);
 	adv_pos();
 	conf_route_NESW();
 	//====探索走行====
@@ -149,7 +148,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----180回転----
 			case 0x22:
@@ -184,7 +183,7 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();			
+				half_sectionA(GET_WALL_ON,CTRL_OFF);			
 				break;
 		}
 
@@ -225,7 +224,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 		set_dir(FORWARD);
 	}
 	
-	half_sectionA();
+	half_sectionA(GET_WALL_ON,CTRL_OFF);
 	adv_pos();
 	conf_route_ESNW();
 	//====探索走行====
@@ -250,7 +249,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----180回転----
 			case 0x22:
@@ -267,7 +266,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:
@@ -283,7 +282,7 @@ void searchSA_ESNW(){											//連続走行の未完成アルゴリズム、�
 					set_position(1);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 		}
 		adv_pos();
@@ -319,7 +318,7 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 		set_dir(FORWARD);
 	}
 	
-	half_sectionA();
+	half_sectionA(GET_WALL_ON,CTRL_OFF);
 	adv_pos();
 	conf_route_NESW();
 	//====探索走行====
@@ -351,7 +350,7 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 					set_position(0);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:
@@ -395,7 +394,7 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 		set_dir(FORWARD);
 	}
 	
-	half_sectionA();
+	half_sectionA(GET_WALL_ON,CTRL_OFF);
 	adv_pos();
 	conf_route_NESW();
 	//====探索走行====
@@ -427,7 +426,7 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 					set_position(0);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA();			//ここでも一文だけ抜けています、走らせてみると上手くいかないのはこの辺のせい、　標
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:

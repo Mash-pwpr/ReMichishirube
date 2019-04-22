@@ -111,7 +111,7 @@ void select_mode(char *mode){
 		pins_write(DISP_LEDS, *mode, 4);			//LEDがActiveLowの場合
 		if(nowR - preR != 0){
 			uart_printf(" mode:%2d\r\n", *mode);
-			melody(b7,100);
+			melody(c6+(65 * *mode),100);
 		}
 	}while(nowL != 1);
 	

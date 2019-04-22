@@ -207,9 +207,6 @@ void Cmt1IntFunc(void){
 		wall_ff.dif = (int16_t)(wall_ff.val - wall_ff.base);
 		wall_fr.dif = (int16_t)(wall_fr.val - wall_fr.base);
 		wall_fl.dif = (int16_t)(wall_fl.val - wall_fl.base);
-
-		
-		
 		break;
 		
 	case 2:
@@ -289,6 +286,9 @@ void Cmt1IntFunc(void){
 			
 			if(targ_vel < 0.2){
 				sen_ctrl = 0;	
+			}
+			if(sen_ctrl > 0.1){
+				sen_ctrl = 0.1;	
 			}
 		}
 			

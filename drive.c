@@ -76,17 +76,7 @@ void s_section(){
 	
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++++
-//a_sectionU
-//	等速で1区画分進む
-// 引数：なし
-// 戻り値：なし
-//+++++++++++++++++++++++++++++++++++++++++++++++
-void a_sectionU() {
-	MF.FLAG.CTRL = 1;
-	//driveU(DR_SEC_HALF*2, 0);		//1区画のパルス分等速走行。走行後は停止しない
-	get_wall_info();			//壁情報を取得
-}
+
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //turn_R90
@@ -104,16 +94,17 @@ void turn_R90(){
 }
 
 void turn_SLA_R90(){
-	MF.FLAG.CTRL = 0;
+	MF.FLAG.CTRL = 1;
 	set_dir(FORWARD);								//右に回転するようモータの回転方向を設定
 	driveA(params_search1.R90_before);
 	
-	time = 0;
-	time2 = 0;
+	//time = 0;
+	//time2 = 0;
 	MF.FLAG.CTRL = 0;
 	driveW(-90);								//低速で指定パルス分回転。回転後に停止する
 	
-	MF.FLAG.CTRL = 0;
+	MF.FLAG.CTRL = 1;
+	
 	driveA(params_search1.R90_after);
 	
 	get_wall_info();
@@ -190,10 +181,11 @@ void set_position(uint8_t flag)
 	//制御を無効にする
 	set_dir(BACK);											//後退するようモータの回転方向を設定
 	ms_wait(200);
-	driveC(1000,0);								//尻を当てる程度に後退。回転後に停止する
+	driveC(500,1);
 	set_dir(FORWARD);										//前進するようにモータの回転方向を設定
   	Wait;
 	MF.FLAG.CTRL =1;
+	
 	if(flag == 0){			//スラローム
 		driveA(SET_MM);
 	}else{
@@ -201,9 +193,7 @@ void set_position(uint8_t flag)
 		driveD(SET_MM * 0.5,1);
 		
 	}
-	
 }
-
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
 //driveA
@@ -243,16 +233,18 @@ void driveA(float dist) {					//引数　走行距離　停止の有無（1で�
 	time = 0;
 	//----走行----
 	while(totalG_mm < dist + ics1){
-		if(time > 3000){
+		uart_printf("targ_vel is %lf, vel_R is %lf, vel_L is %lf,totalG is %lf\r\n",targ_vel, vel_R, vel_L,totalG_mm);
+		ms_wait(10);
+/*		if(time > 1000){
 			break;
 		}
-		if(MF.FLAG.WALL && flag == 0){
+/*		if(MF.FLAG.WALL && flag == 0){
 			dif_pulse_counter_r = (dist + ics1 - 40) / Kxr;
 			dif_pulse_counter_l = (dist + ics1 - 40) / Kxr;
 			MF.FLAG.WALL = 0;
 			flag = 1;
 		}
-	}
+*/	}
 	kviR = kviL = 0;
 	kwpG = 0;
 	kwiG = 0;
@@ -295,10 +287,8 @@ void driveD(uint16_t dist, unsigned char rs) {
 		MF.FLAG.ACCL = 0;
 		MF.FLAG.DECL = 1;
 		
-		//uart_printf("DEACCL is %lf, %lf, %lf\r\n", totalG_mm, offsetG_mm,maxindex);
-		
-		while(targ_vel > 0.0f){
-			if(targ_vel == 0){
+		while(1){
+			if(targ_vel == 0.0f){
 				ms_wait(100);
 				break;
 			}
@@ -311,11 +301,11 @@ void driveD(uint16_t dist, unsigned char rs) {
 	}
 	//uart_printf("Finish is %f\r\n",totalG_mm);
 	//----停止措置----
-	drive_stop(rs);											//走行終了、停止許可があれば停止
+	drive_stop(rs);								//走行終了、停止許可があれば停止
 
-	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+/*	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
-
+*/
 	kviR = kviL = 0;
 	kwpG = 0;
 	kwiG = 0;
@@ -371,7 +361,7 @@ void driveAD(float theta)
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-
+		kwiG = 0;
 		while(angle_G < theta) {
 			if(targ_omega == 0){
 				break;
@@ -382,7 +372,7 @@ void driveAD(float theta)
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-
+		kwiG = 0;
 		while(angle_G > theta) {
 			if(targ_omega == 0){
 				break;
@@ -397,7 +387,6 @@ void driveAD(float theta)
 	drive_stop(1);	
 	//time = 0;
 	kviR = kviL = 0;
-	kwpG = 0;
 	kwiG = 0;
 	
 }
@@ -434,7 +423,6 @@ void driveX(uint16_t dist){
 	
 	//----停止許可があれば停止----
 	drive_stop(1);	
-	angle_G = 0;
 	targ_vel = 0;
 }
 
@@ -445,7 +433,7 @@ void driveX(uint16_t dist){
 // 引数2：rs・・・走行後停止するか　1:する　それ以外:しない
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
-void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可　＊時間制限でモータ回せる関数
+void driveC(uint16_t count, unsigned char rs)			//引数　時間　停止許可　＊時間制限でモータ回せる関数
 {
 	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
@@ -466,7 +454,10 @@ void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可�
 	
 	time = 0;
 	//====回転====
-	while(time < dist);			//一定時間経過まで待機
+	while(time < count * 0.5);			//一定時間経過まで待機
+	MF.FLAG.ACCL = 0;
+	MF.FLAG.DECL = 1;
+	while(time < count);
 
 	if(rs){
 		vel_direction_R = vel_direction_L = 0;
@@ -496,10 +487,12 @@ void driveC(uint16_t dist, unsigned char rs)			//引数　時間　停止許可�
 void driveW(int16_t theta)			//引数　時間　停止許可　
 {
 	float angle_offset = 0;
-	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
-	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+	float ics = angle_G;
 	
-	angle_G = 0;
+/*	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+	dif_pulse_counter_r = dif_pulse_counter_l = 0;
+*/	
+	//angle_G = 0;
 	targ_omega = 0;
 	
 	//====回転開始====
@@ -530,13 +523,14 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	if(omega_direction == 1){				//左旋回
 		
 		angle_offset = angle_offset * 1.0f;
-		while(angle_G + angle_offset < theta);
+		while(angle_G + angle_offset < theta + ics);
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-/*		kwpG = 0;
+
 		kwiG = 0;
-*/		while(angle_G  < theta){
+		
+		while(angle_G  < theta + ics){
 			if(targ_omega == 0){
 				break;
 			}
@@ -544,14 +538,14 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	} else if(omega_direction == -1){
 		
 		angle_offset = angle_offset * 1.0f;		//右旋回
-		while(angle_G - angle_offset > theta);
+		while(angle_G - angle_offset > theta + ics);
 		MF.FLAG.WACCL = 0;
 		MF.FLAG.WDECL = 1;
 		kviR = kviL = 0;
-/*		kwpG = 0;
+
 		kwiG = 0;
-*/
-		while(angle_G > theta){
+
+		while(angle_G > theta + ics){
 			if(targ_omega == 0){
 				break;
 			}
@@ -562,10 +556,9 @@ void driveW(int16_t theta)			//引数　時間　停止許可　
 	duty_fix_gain_R = 1.0;
 	duty_fix_gain_L = 1.0;
 	
-	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
+/*	totalG_mm = totalR_mm = totalL_mm = 0;					//走行距離をリセット
 	dif_pulse_counter_r = dif_pulse_counter_l = 0;
-
-	//angle_G = 0;
+*/
 	kviR = kviL = 0;
 	kwpG = kwiG = 0;
 
@@ -600,7 +593,7 @@ void drive_stop(unsigned char rs){
 	
 	//time = 0;
 	//====停止処理====
-	if(rs) MF.FLAG.STOP = 1;								//停止するのであればストップフラグを1に
+//	if(rs) MF.FLAG.STOP = 1;								//停止するのであればストップフラグを1に
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++
@@ -648,7 +641,7 @@ void test_drive(char *mode){
 
 	while(1){											
 		uart_printf("test_drive:\n");						//UARTで送信
-		select_mode(mode);									//モード選択をさせる
+		select_mode(mode,1);									//モード選択をさせる
 		ms_wait(50);
 		switch(*mode){										//モード番号により分岐
 			//----位置の調整----

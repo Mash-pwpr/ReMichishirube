@@ -152,7 +152,6 @@
 	void half_sectionA(int16_t, int16_t);		//加速半区画,第一引数でGetWallInfo, 第二引数でCTRLのオンオフ
 	void half_sectionD();		//減速半区画
 	void a_section();		//加減速一区画
-	void a_sectionU();		//等速一区画
 	void s_section();		//連続区画直線走行
 	void turn_R90();		//右90回転
 	void turn_L90();		//左90回転

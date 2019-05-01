@@ -76,9 +76,10 @@ void ms_wait(unsigned int ms){
 //select_mode
 //	モードセレクトを行う
 // 引数1：mode・・・モード番号を格納する変数のアドレス
+// 引数2 :calc・・・カウント時の音をアップorダウンで定める
 // 戻り値：無し
 //+++++++++++++++++++++++++++++++++++++++++++++++
-void select_mode(char *mode){
+void select_mode(char *mode,char calc){
 	uint16_t encR,encL;
 	uint16_t nowR = 0;
 	uint16_t nowL = 0;
@@ -89,6 +90,11 @@ void select_mode(char *mode){
 	R_PG_Timer_SetCounterValue_MTU_U0_C2(0);
 	
 	//====変数初期化====
+	if(calc > 1){
+		uart_printf("First Mode Select\r\n");
+	}else {
+		uart_printf("Second Mode Select\r\n");
+	}
 	uart_printf(" mode: 0\r");						//モードをUARTで送信
 	
 	R_PG_Timer_StartCount_MTU_U0_C1();
@@ -102,7 +108,7 @@ void select_mode(char *mode){
 		R_PG_Timer_GetCounterValue_MTU_U0_C1(&encL);
 		R_PG_Timer_GetCounterValue_MTU_U0_C2(&encR);
 		
-		nowR = (uint16_t)(encR / 4400);
+		nowR = (uint16_t)(encR / 4300);
 		nowL = (uint16_t)(encL / 30000);
 		
 		//ms_wait(50);
@@ -111,12 +117,20 @@ void select_mode(char *mode){
 		pins_write(DISP_LEDS, *mode, 4);			//LEDがActiveLowの場合
 		if(nowR - preR != 0){
 			uart_printf(" mode:%2d\r\n", *mode);
-			melody(c6+(65 * *mode),100);
+			if(calc > 2) { 
+				melody(c6+(65 * *mode),100);
+			}else{
+				melody(b7 + (65 * *mode),100);	
+			}
 		}
 	}while(nowL != 1);
 	
 	uart_printf("Finish :  This is mode %2d\r\n", *mode);
-	melody(d6,500);
+	if(calc > 0) { 
+		melody(c6+(65 * *mode),500);
+	}else{
+		melody(b7+(65 * *mode),500);	
+	}
 	
 	R_PG_Timer_HaltCount_MTU_U0_C1();
 	R_PG_Timer_HaltCount_MTU_U0_C2();
@@ -161,12 +175,6 @@ void start_wait(){
 	R_PG_ADC_12_StartConversionSW_S12AD0();
 	R_PG_ADC_12_GetResult_S12AD0(ad_res);
 	
-/*	ad_r_off = ad_res[3];
-	ad_fr_off = ad_res[4];
-	ad_ff_off = ad_res[2];
-	ad_fl_off = ad_res[0];
-	ad_l_off = ad_res[1]; 
-*/
 	R_PG_Timer_StartCount_CMT_U0_C1();
 	uart_printf("Ready???\r\n");
 	
@@ -180,14 +188,7 @@ void start_wait(){
 			break;
 		}
 	}
-/*	R_PG_Timer_HaltCount_CMT_U0_C1();
-	
-	pin_write(PE0,0);
-	pin_write(PE1,0);
-	pin_write(PE2,0);
-	pin_write(PE3,0);
-	pin_write(PE4,0);
-*/
+
 }
 
 void start_ready(void){
@@ -203,6 +204,7 @@ void start_ready(void){
 	
 	melody(c6,1000);
 	auto_Calibration(0.30,0.60);
+	time2 = 0;
 	driveA(SET_MM);
 }
 
@@ -226,7 +228,9 @@ void setting_gain(gain instance){
 
 void auto_Calibration(float constant_l, float constant_r){
 	wall_l.threshold = (uint16_t)(wall_l.dif * constant_l);
+	wall_fl.threshold = WALL_BASE_F;
 	wall_ff.threshold = WALL_BASE_F;
+	wall_fr.threshold = WALL_BASE_F;
 	wall_r.threshold = (uint16_t)(wall_r.dif * constant_r);
 	uart_printf("threshold %d, %d :: dif %d, %d\r\n",wall_l.threshold, wall_r.threshold, wall_l.dif, wall_r.dif);
 }
@@ -235,4 +239,46 @@ void ctrl_zero(){
 	MF.FLAG.CTRL = 0;
 	sen_ctrl = 0;
 	pre_dif_total = 0;
+}
+
+void log_print(){
+	char mode = 0;
+	uint16_t i = 0;
+	select_mode(&mode,2);
+	
+	switch(mode){
+		case 0:	//----テスト情報をシリアル送信----
+			ms_wait(500);
+			uart_printf("START\r\n");
+			
+			//uart_printf("base:%d, %d\r\n", wall_l.threshold, wall_r.threshold);
+			for(i=0;i<2000;i++){
+				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",log.test1[i],log.test2[i],log.test3[i],log.test4[i],log.test5[i],log.test6[i]);
+				ms_wait(1);
+			}
+			uart_printf("ALL\r\n");
+			break;
+			
+		case 1:		
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+
+		case 11:
+			break;
+		case 12:
+			break;
+		
+		case 13:		
+			break;
+		default:
+			
+			break;
+		}
+	
 }

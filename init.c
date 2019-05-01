@@ -42,7 +42,6 @@ void port_Init(void){
 	PORTB.PODR.BIT.B7 = 1;
 				
 	set_dir(FORWARD);			//進行方向を前へ
-
 }
 
 
@@ -93,7 +92,7 @@ void val_Init(void){
 	params_search1.R90_before = 30;		//35
 	params_search1.R90_after = 45;
 	params_search1.L90_before = 35;
-	params_search1.L90_after = 50;
+	params_search1.L90_after = 40;
 	
 /*	uart_printf("tim is %lf\r\n", val1);
 	uart_printf("omega is %lf\r\n", val2);
@@ -109,10 +108,10 @@ void val_Init(void){
 	gain_search1.vel_kpL = 14.0f;			
 	gain_search1.vel_kiR = 0.05f;		//0.05
 	gain_search1.vel_kiL = 0.05f;
-	gain_search1.omega_kp = 3.0f;	//1.3
-	gain_search1.omega_ki = 0.3f;		//0.11
-	gain_search1.wall_kp = 0.015f;
-	gain_search1.wall_kd = 0.002f;
+	gain_search1.omega_kp = 5.0f;		//1.3
+	gain_search1.omega_ki = 3.0f;		//0.11
+	gain_search1.wall_kp = 0.00f;
+	gain_search1.wall_kd = 0.00f;
 	
 	setting_params(params_search1);
 	setting_gain(gain_search1);

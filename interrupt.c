@@ -23,8 +23,19 @@ void Mtu3IcCmDIntFunc(void){		//パルス一周期でやると呼び出される
 	pin_write(P54,0);
 	pin_write(P55,0);
 
-	//duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
-	duty_l = duty_fix_gain_L * (vpid_L + sen_ctrl + xpid_G - apid_G);
+//	duty_l = Kvolt * accel_l / VOLT_BAT + kpvL + kpdL;
+	duty_l = duty_fix_gain_L * (vpid_L - vel_omega + xpid_G - apid_G);
+//	duty_l = 0.3;
+
+//	MATLAB同定用	
+/*	if(time2 >= 500){
+		duty_l = 0;
+	}else if(time > 100){
+		duty_l = 0.25;
+	}else{
+		duty_l = 0;
+	}
+*/
 	if(duty_l < 0){
 		MF.FLAG.L_DIR = 0;					
 		duty_l = - duty_l;	
@@ -70,8 +81,19 @@ void Mtu4IcCmDIntFunc(void){			//右モータ制御関数
 	pin_write(PA4,0);
 	pin_write(PA6,0);
 
-	//duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
-	duty_r = duty_fix_gain_R * (vpid_R - sen_ctrl + xpid_G + apid_G);
+//	duty_r = Kvolt * accel_r / VOLT_BAT + kpvR + kpdR;
+	duty_r = duty_fix_gain_R * (vpid_R + vel_omega + xpid_G + apid_G);
+//	duty_r = 0.3;
+
+//	MATLAB同定用	
+/*	if(time2 > 500){
+		duty_r = 0;
+	}else if(time > 100){
+		duty_r = 0.25;
+	}else{
+		duty_r = 0;
+	}
+*/	
 	if(duty_r < 0){
 		MF.FLAG.R_DIR = 0;
 		duty_r = - duty_r;	
@@ -152,10 +174,10 @@ void Cmt1IntFunc(void){
 		wall_r.diff = wall_r.pre - wall_r.dif;
 		wall_l.diff = wall_l.pre - wall_l.dif;
 		
-		if(wall_r.diff > 8 || wall_l.diff){
+/*		if(wall_r.diff > 8 || wall_l.diff){
 			MF.FLAG.WALL = 1;
 		}
-		
+*/		
 		wall_r.pre = wall_r.dif;
 		wall_l.pre = wall_l.dif;
 				
@@ -284,12 +306,14 @@ void Cmt1IntFunc(void){
 			sen_ctrl = gain_search1.wall_kp * dif_total + gain_search1.wall_kd * (pre_dif_total - dif_total);
 			pre_dif_total = dif_total;
 			
-			if(targ_vel < 0.2){
+			if(targ_vel < 0.2 || MF.FLAG.DECL){
 				sen_ctrl = 0;	
 			}
-			if(sen_ctrl > 0.1){
-				sen_ctrl = 0.1;	
+			if(sen_ctrl > 0.08){
+				sen_ctrl = 0.08;	
 			}
+		} else {
+			sen_ctrl = 0;
 		}
 			
 			
@@ -303,6 +327,7 @@ void Cmt2IntFunc(){
 
 	time++;
 	time2++;
+
 	//エンコーダの値取得
 	R_PG_Timer_GetCounterValue_MTU_U0_C1(&pulse_l);
 	R_PG_Timer_GetCounterValue_MTU_U0_C2(&pulse_r);
@@ -364,13 +389,26 @@ void Cmt2IntFunc(){
 /*		log.test1[time2] = omega_direction * targ_omega;//angle_G, sen_dr;
 		log.test2[time2] = omega_G_rad;//dif_angle, sen_dl;
 	
-		log.test3[time2] = vel_R;//angle_G;//ad_r, kvpR
-		log.test4[time2] = vel_L;//omega_G;//ad_l, kvdR
+		log.test3[time2] = targ_vel;//angle_G;//ad_r, kvpR
+		log.test4[time2] = vel_G;//omega_G;//ad_l, kvdR
 	
 		log.test5[time2] = totalG_mm;
 		log.test6[time2] = angle_G;
 */
 
+//MATLAB同定用
+/*		if(time % 10 == 0){
+			log.test1[time2] = vel_R;
+			log.test2[time2] = vel_L;//dif_angle, sen_dl;
+	
+			log.test3[time2] = duty_l;//angle_G;//ad_r, kvpR
+			log.test4[time2] = duty_r;//omega_G;//ad_l, kvdR
+	
+			log.test5[time2] = totalG_mm;
+			log.test6[time2] = angle_G;
+			time2++;
+		}
+*/
 	//PIDしてみる？
 	if(MF.FLAG.WCTRL){
 		//偏差角速度の算出
@@ -384,8 +422,12 @@ void Cmt2IntFunc(){
 	
 	if(MF.FLAG.VCTRL){
 		//偏差の計算
-		dif_vel_R = (targ_vel * vel_direction_R) + vel_omega - vel_R;
-		dif_vel_L = (targ_vel * vel_direction_L) - vel_omega - vel_L;
+//		dif_vel_R = (targ_vel * vel_direction_R) + vel_omega - vel_R;
+//		dif_vel_L = (targ_vel * vel_direction_L) - vel_omega - vel_L
+
+		dif_vel_R = (targ_vel * vel_direction_R) - vel_R;
+		dif_vel_L = (targ_vel * vel_direction_L) - vel_L;
+
 		//偏差のP制御
 		kvpR = gain_now.vel_kpR * dif_vel_R;				
 		kvpL = gain_now.vel_kpL * dif_vel_L;

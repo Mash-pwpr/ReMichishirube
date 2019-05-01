@@ -107,7 +107,7 @@ void sensor_start(){
 	R_PG_Timer_StartCount_MTU_U0_C1();	//エンコーダ左右
 	R_PG_Timer_StartCount_MTU_U0_C2();
 	
-	//R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
+	R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
 	R_PG_Timer_StartCount_CMT_U1_C2();	//エンコーダ処理，PID計算用タイマ
 	
 }

@@ -95,11 +95,12 @@
 	//====その他====
 	void stay(unsigned int);
 	void ms_wait(unsigned int);
-	void select_mode(char *mode);						//モードの入力
+	void select_mode(char *mode,char);						//モードの入力
 	void timer_start();
 	void melody(uint16_t,uint16_t);
 	void start_wait();
 	void start_ready();
+	void log_print();
 	
 	void auto_Calibration(float,float);
 	void setting_params(params);

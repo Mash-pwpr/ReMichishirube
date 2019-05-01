@@ -136,18 +136,11 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				break;
 			//----右折----
 			case 0x44:
-				if(wall_l.dif > wall_l.threshold + WALL_OFF){
-					MF.FLAG.SET = 1;
-				}
 				half_sectionD();
 				turn_R90();
 				Wait;
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET ){
-					set_position(1);
-					MF.FLAG.SET = 0;
-				}
 				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----180回転----
@@ -166,23 +159,15 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 					MF.FLAG.SET = 0;
 				}
 				MF.FLAG.CTRL = 0;
-				driveA(HALF_MM);
-				get_wall_info();
+				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:
-				if(wall_r.dif > wall_r.threshold + WALL_OFF){
-					MF.FLAG.SET = 1;
-				}
 				half_sectionD();
 				turn_L90();
 				Wait;
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET){
-					set_position(1);
-					MF.FLAG.SET = 0;
-				}
 				half_sectionA(GET_WALL_ON,CTRL_OFF);			
 				break;
 		}
@@ -338,19 +323,19 @@ void searchSLA(){											//連続走行の未完成アルゴリズム、完�
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(wall_ff.dif > wall_ff.threshold){
+/*				if(wall_ff.dif > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
-				turn_180();
+*/				turn_180();
 				Wait;
 				turn_dir(DIR_TURN_180);
 				set_dir(FORWARD);
 
-				if(MF.FLAG.SET){
+/*				if(MF.FLAG.SET){
 					set_position(0);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA(GET_WALL_ON,CTRL_OFF);
+*/				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:
@@ -414,19 +399,19 @@ void searchSLA_ESNW(){											//連続走行の未完成アルゴリズム、
 			//----180回転----
 			case 0x22:
 				half_sectionD();
-				if(wall_ff.threshold > wall_ff.threshold){
+/*				if(wall_ff.threshold > wall_ff.threshold){
 					MF.FLAG.SET = 1;
 				}
-				turn_180();
+*/				turn_180();
 				Wait;
 				turn_dir(DIR_TURN_180);
 				set_dir(FORWARD);
 
-				if(MF.FLAG.SET){
+/*				if(MF.FLAG.SET){
 					set_position(0);
 					MF.FLAG.SET = 0;
 				}
-				half_sectionA(GET_WALL_ON,CTRL_OFF);
+*/				half_sectionA(GET_WALL_ON,CTRL_OFF);
 				break;
 			//----左折----
 			case 0x11:

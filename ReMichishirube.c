@@ -43,46 +43,47 @@ int main(void) {
 	batt_Check(1000);
 	//GYRO_OFFSET(1000);
 	
-//	melody(c6h,1000);		
 	set_dir(FORWARD);
 	
 /*	start_wait();
 	GYRO_OFFSET(1000);
 */	
+	melody(d6,500);
 	sensor_start();
-//	start_wait();
+	ms_wait(100);
+	//start_wait();
+	//start_ready();
 	
-/*	MF.FLAG.CTRL = 0;
-	time = time2 = 0;
-	driveA(100);
-	driveD(100,1);
-*/
-
-	time = time2 = 0;
-/*	MF.FLAG.CTRL = 0;
-	driveA(90 + SET_MM);
-	driveA(180);
-	driveA(180);
+//	システム同定用
+/*	time = time2 = 0;
+	drive_start();
+	while(time2 < 501);
+	drive_stop(1);
 	MF.FLAG.CTRL = 0;
+	ms_wait(10000);
+*/	
+//	get_base();
+	
+/*	driveA(90);
+	driveA(180);
 	driveD(90,1);	
 */
-//	turn_R90();
+
+	turn_R90();
 //	driveD(0,1);
 //	MF.FLAG.CTRL = 1;
-	//ms_wait(10);
-//	auto_Calibration(0.5,0.5);
-//	ms_wait(1000);
-//	driveA(SET_MM + 90);
-//	turn_SLA_R90();
-//	turn_SLA_L90();
-
+	
+/*	driveA(SET_MM + 90);
+//	driveA(180 * 4);
+	turn_SLA_R90();
+	turn_SLA_L90();
+*/
 /*	while(1){
 		driveA(180 * 3);
 		turn_SLA_L90();			
 	}	
 */		
 //	driveD(90,1);
-//	turn_SLA_L90();
 	
 /* サーキット専用プログラム	
 	get_base();
@@ -105,13 +106,13 @@ int main(void) {
 	while(1){ // Main Loop
 		uart_printf("Hello, World!\r\n");	
 		//====モードセレクト====
-		select_mode(&mode);
+		select_mode(&mode,3);
 		ms_wait(100);
 		//----選択項目の実行----
 		switch(mode){
 		case 0:	//----基準値を取る----
-			
-			//----情報をシリアル送信----
+			log_print();
+/*			//----情報をシリアル送信----
 			ms_wait(500);
 			uart_printf("START\r\n");
 			
@@ -122,7 +123,7 @@ int main(void) {
 				ms_wait(1);
 			}
 			uart_printf("ALL\r\n");
-			break;
+*/			break;
 			
 		case 1:	//----一次探索走行----
 			goal_x = GOAL_X;									//ゴール座標を設定　　GOAL_Xはglobal.hにマクロ定義あり

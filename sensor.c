@@ -11,8 +11,6 @@
 ==============================================================
 */
 
-//※解説の章番号等は日本語版ユーザーマニュアルRev.00.15に準拠
-
 /*ヘッダファイルの読み込み*/
 #include "global.h"
 
@@ -83,8 +81,7 @@ void get_wall_info()
 }
 
 void enc_test(){
-	totalR_mm = totalL_mm = 0;
-	pulse_flag_r = pulse_flag_l = 0;
+	reset_distance();
 	time = 0;
 	R_PG_Timer_StartCount_MTU_U0_C1();
 	R_PG_Timer_StartCount_MTU_U0_C2();
@@ -94,10 +91,7 @@ void enc_test(){
 /*		
 		totalR_mm += -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi * (dif_pulse_r % 4096) / 4096;
 		totalL_mm += -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi * (dif_pulse_l % 4096) / 4096;
-		
-		pulse_pre_r = pulse_r;
-		pulse_pre_l = pulse_l;
-*/		uart_printf("totalR_mm:%4lf totalL_mm:%4lf\r\n",totalR_mm, totalL_mm);
+*/		uart_printf("R_distance:%4lf L_distance:%4lf\r\n",encoder_r.distance, encoder_l.distance);
 		ms_wait(500);
 	}
 
@@ -107,7 +101,7 @@ void sensor_start(){
 	R_PG_Timer_StartCount_MTU_U0_C1();	//エンコーダ左右
 	R_PG_Timer_StartCount_MTU_U0_C2();
 	
-	//R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
+	R_PG_Timer_StartCount_CMT_U0_C1();	//壁センサ用LED起動タイマ
 	R_PG_Timer_StartCount_CMT_U1_C2();	//エンコーダ処理，PID計算用タイマ
 	
 }
@@ -123,6 +117,8 @@ void sensor_stop(){
 	pin_write(PE2,0);
 	pin_write(PE3,0);
 	pin_write(PE4,0);
+	
+	melody(c6,1000);
 
 }
 void sensor_check(){
@@ -130,13 +126,13 @@ void sensor_check(){
 	R_PG_Timer_StartCount_CMT_U0_C1();
 	get_base();
 	while(1){
-		pins_write(DISP_LEDS, 0, LED_NUM);											//pins_write()はport.cに関数定義あり
+		pins_write(DISP_LEDS, 0, LED_NUM);								//pins_write()はport.cに関数定義あり
 		uart_printf("ad_l: %4d ad_fl:%4d ad_ff:%4d  ad_fr:%4d ad_r:%4d \r\n", wall_l.dif, wall_fl.dif, wall_ff.dif, wall_fr.dif, wall_r.dif);
 		//uart_printf(" | dif_l: %4d dif_r:%4d\r\n", wall_r., dif_r);
 	//----LEDが4つの場合----
 		if(wall_fr.dif > wall_fr.threshold){
 			// ここ、ad_lになってましたよ！！
-			pin_write(DISP_LEDS[0], ON);											//pin_write()はport.cに関数定義あり
+			pin_write(DISP_LEDS[0], ON);								//pin_write()はport.cに関数定義あり
 		}
 		if(wall_r.dif > wall_r.threshold){
 			pin_write(DISP_LEDS[1], ON);

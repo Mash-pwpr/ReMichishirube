@@ -10,6 +10,45 @@
 /*ヘッダファイルの読み込み*/
 #include "port.h"
 
+typedef struct{
+	float real;			//測定した速度
+	float dif;			//速度偏差
+	float pre;			//偏差直前値
+	float p_out;			//P制御出力値
+	float i_out;			//I制御出力
+	int8_t dir;		//モータの回転方向
+	float out;
+} vel_ctrl;
+	
+typedef struct{
+	float target;			//目標角速度
+	float dif;			//角速度偏差
+	float p_out;			//P制御の出力値
+	float i_out;			//I制御の出力値
+	int8_t dir;			//回転方向
+	float out;
+} omega_ctrl;
+	
+typedef struct{
+	uint16_t pulse;			//エンコーダ生値
+	int16_t  dif;			//エンコーダ生値差分
+	int8_t over_flag;		//オーバーフローフラグ
+	uint32_t sum; 			//エンコーダ積算値			
+	float distance;			//物理量走行距離
+} encoder;
+	
+typedef struct{
+	float vel;			//重心速度
+	float vel_target;		//重心目標速度
+	float omega_deg;		//重心角速度　degree単位
+	float pre_omega_deg;		//角度計算用の保存用
+	float omega_rad;		//重心角速度　radian単位
+	int8_t omega_dir;		//角速度変化方向
+	float distance;			//重心走行距離
+	float angle;			//重心角度　degree単位
+	
+} gravity;
+
 #ifndef DRIVE_H_
 
 	#define DRIVE_H_									//読み込んだことを表す
@@ -30,104 +69,42 @@
 
 
 	//====変数====
-#ifdef EXTERN								//対応ファイルでEXTERNが定義されている場合
-	volatile float vel_R, vel_L,vel_G,xR, xL,xG;			//現在速度，距離変化
-	volatile float targ_vel, max_vel_G;				//目標速度
-	volatile float targ_total_mm;					//制止するための目標距離
+#ifdef EXTERN			//対応ファイルでEXTERNが定義されている場合
 	
-	/***速度のPID計算用***/
-	volatile float dif_vel_R,dif_vel_L;				//速度偏差
-	volatile float dif_pre_vel_R,dif_pre_vel_L;			//速度偏差
-	volatile float kvpR,kvdR,kviR,kvpL,kvdL,kviL;			//PID制御量
-	volatile int8_t vel_direction_R,vel_direction_L;
-	volatile float vpid_R,vpid_L;
+	/*** 重心・位置　構造体 ***/
+	volatile gravity centor;
+	volatile encoder encoder_r;
+	volatile encoder encoder_l;
 	
-	/***位置のPID計算***/
-	volatile float dif_x_R,dif_x_L,dif_x_G;
-	volatile float dif_pre_x_R,dif_pre_x_L,dif_pre_x_G;
-	volatile float kxpR,kxdR,kxdL,kxpL,kxpG,kxdG;
-	volatile float xpid_R,xpid_L,xpid_G;
+	/*** 速度制御 構造体***/
+	volatile vel_ctrl vel_ctrl_R;
+	volatile vel_ctrl vel_ctrl_L;
+			
+	/***　角速度制御 構造体***/
+	volatile omega_ctrl omega;
 	
-	/***角速度のPID計算***/
-	volatile float targ_omega;
-	volatile float dif_omega;
-	volatile float vel_omega;
-	volatile float dif_pre_omega;
-	volatile float kwpG,kwdG,kwiG;
-	volatile float wpid_G;
-	volatile int8_t omega_direction;
+	volatile uint16_t time,time2, ms_time;			//
+	volatile float minindex, maxindex,maxindex_w, number;		//時間・加速必要時間・角加速必要時間？
 	
-	/*** 角度のPID計算 ***/
-	volatile float targ_angle;
-	volatile float dif_angle,dif_pre_angle;
-	volatile float kapG,kadG;
-	volatile float apid_G; 
+	volatile float Kvolt,Kxr;				//加速度計算するための電流定数，距離変換のための定数
 	
-	volatile uint16_t time,time2, ms_time;				//
-	volatile float minindex, maxindex,maxindex_w;		//時間・加速必要時間・角加速必要時間？
-
-	volatile float duty_fix_gain_R,duty_fix_gain_L;			//旋回時の残留偏差消すための補正係数
+#else									//対応ファイルでEXTERNが定義されていない場合	
+	/*** 重心・位置　構造体 ***/
+	extern volatile gravity centor;
+	extern volatile encoder encoder_r;
+	extern volatile encoder encoder_l;
 	
-	volatile float duty_r,duty_l;					//Duty比計算と計算オーバー用のバッファ
-	volatile float Kvolt,Kxr;					//加速度計算するための電流定数，距離変換のための定数
-	volatile float accel;						//目標加速度？
+	/*** 速度制御 構造体***/
+	extern volatile vel_ctrl vel_ctrl_R;
+	extern volatile vel_ctrl vel_ctrl_L;
 		
-	volatile uint16_t pulse_l, pulse_r;								//左右パルスカウント
-	volatile int32_t dif_pulse_r, dif_pulse_l,pulse_flag_l, pulse_flag_r;				//エンコーダ変化値，オバフ用フラグ
-	volatile int32_t dif_pulse_counter_r, dif_pulse_counter_l;
-	volatile float totalR_mm, totalL_mm,totalG_mm;							//左，右，重心走行距離[mm]
-	volatile float offsetR_mm, offsetL_mm, offsetG_mm, offsetA;					//停止に必要なオフセット距離
-	volatile float sen_dl, sen_dr;									//壁センサによる比例制御量
-	
-#else									//対応ファイルでEXTERNが定義されていない場合
-	/*グローバル変数の宣言*/			
-	extern volatile float dif_pre_vel_R, dif_pre_vel_L;
-	extern volatile float vel_R,vel_L,vel_G,xR, xL,xG;		 //両輪速度
-	extern volatile float targ_vel,max_vel_G;	       		 //目標速度
-	extern volatile float targ_total_mm;
-	
-	/***速度のPID計算用***/
-	extern volatile float dif_vel_R, dif_vel_L;
-	extern volatile float kvpR,kvdR,kviR,kvpL,kvdL,kviL;
-	extern volatile int8_t vel_direction_R,vel_direction_L;
-	extern volatile float vpid_R,vpid_L;
-
-	/***位置のPID計算***/
-	extern volatile float dif_x_R,dif_x_L,dif_x_G;
-	extern volatile float dif_pre_x_R,dif_pre_x_L,dif_pre_x_G;
-	extern volatile float kxpR,kxdR,kxdL,kxpL,kxpG,kxdG;	
-	extern volatile float xpid_R,xpid_L,xpid_G;
-	
-	/***角速度のPID計算***/
-	extern volatile float targ_omega;
-	extern volatile float dif_omega;
-	extern volatile float vel_omega;
-	extern volatile float dif_pre_omega;
-	extern volatile float kwpG,kwdG,kwiG;
-	extern volatile float wpid_G;
-	extern volatile int8_t omega_direction;
-	
-	/*** 角度のPID計算 ***/
-	extern volatile float targ_angle;
-	extern volatile float dif_angle,dif_pre_angle;
-	extern volatile float kapG,kadG;
-	extern volatile float apid_G; 
+	/***　角速度制御 構造体***/
+	extern volatile omega_ctrl omega;
 	
 	extern volatile uint16_t time,time2, ms_time;
-	extern volatile float minindex, maxindex,maxindex_w;		//最低速度・最大速度
-	extern volatile float duty_fix_gain_R,duty_fix_gain_L;
+	extern volatile float minindex, maxindex,maxindex_w,number;
 	
-	extern volatile float duty_r,duty_l;
 	extern volatile float Kvolt,Kxr;			
-	extern volatile float accel;
-	
-	extern volatile uint16_t pulse_l, pulse_r;		
-	extern volatile int32_t dif_pulse_r, dif_pulse_l,pulse_flag_l, pulse_flag_r;
-	extern volatile int32_t dif_pulse_counter_r, dif_pulse_counter_l;
-	extern volatile float totalR_mm, totalL_mm,totalG_mm;
-	extern volatile float offsetR_mm, offsetL_mm,offsetG_mm,offsetA;
-	extern volatile float sen_dl, sen_dr;				
-	
 	
 #endif
 

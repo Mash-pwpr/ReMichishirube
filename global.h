@@ -129,13 +129,6 @@
 #define WALL_START 3000
 
 #define CONT_FIX 0.05f
-/*
-#define CONT0 0.0010 		//壁Pゲイン 0.002
-#define CONT1 0.0005		//壁Pゲイン
-#define CONT2 0.00025		//壁Pゲイン
-#define CONT3 0.0001		//壁Pゲイン
-#define CONT4 0.0001		//壁Pゲイン
-*/
 
 //----制御基準値----
 #define SREF_MIN_L 100		//左制御基準　　下限　0
@@ -177,7 +170,7 @@
 			unsigned char ACCL:1;		//加速フラグ(B4)
 			unsigned char DECL:1;		//減速フラグ(B5)
 			unsigned char FFCTRL:1;		//FF制御フラグ(B6)
-			unsigned char STOP:1;		//停止フラグ(B7)
+			unsigned char REVOL:1;		//停止フラグ(B7)
 			unsigned char R_DIR:1;		//予備ビット(B8)		
 			unsigned char L_DIR:1;		//予備フラグ(B9)
 			unsigned char VCTRL:1;		//予備フラグ(B10)

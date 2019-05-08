@@ -59,29 +59,54 @@ void sensor_Init(void){
 void val_Init(void){
 	int i;
 	float val1 = 0;
-	//----センサ系----
+	//----壁センサ系----
 	tp = 0;
 	wall_l.dif = wall_r.dif = wall_fl.dif = wall_fr.dif = wall_ff.dif = 0;
 	wall_l.val = wall_r.val = wall_fl.val = wall_fr.val = wall_ff.val = 0;
 	wall_l.base = wall_r.base = wall_fl.base = wall_fr.base = wall_ff.base = 0;
 	wall_l.threshold = wall_r.threshold = wall_fl.threshold = wall_fr.threshold = wall_ff.threshold = 0;
-	dif_pulse_counter_r = dif_pulse_counter_l = 0;
-	pulse_flag_l = pulse_flag_r = 0;
-	time = time2 = 0;
-	vel_direction_R = vel_direction_L = 1;	//モータの回転方向とりあえず1で旋回にしておく
-
-	//足回り系？
-	totalR_mm = totalL_mm = totalG_mm = 0;
-	dif_pre_vel_R = dif_pre_vel_L = 0;
-	dif_pre_x_R = dif_pre_x_L = 0;
-	kvpR = kvdR = kviR = kvpL = kvdL = kviL = 0;
-	kxpR = kxdR = kxpL = kxdL = 0;
-	vel_omega = 0;
-	duty_fix_gain_R = 1.0;
-	duty_fix_gain_L = 1.0;
-	duty_r = duty_l = 0;
-	vpid_R = vpid_L = xpid_R = xpid_L = apid_G = wpid_G = 0;
+	time = 0;
+	time2 = 0;
 	
+	/*** encoder構造体の初期化 ***/
+	encoder_r.pulse = 0;
+	encoder_r.dif = 0;
+	encoder_r.over_flag = 0;
+	encoder_r.sum = 0;
+	encoder_r.distance = 0;
+	
+	encoder_l.pulse = 0;
+	encoder_l.dif = 0;
+	encoder_l.over_flag = 0;
+	encoder_l.sum = 0;
+	encoder_l.distance = 0;
+	
+
+	/*** vel_ctrl構造体の初期化 ***/
+	vel_ctrl_R.real = 0;
+	vel_ctrl_R.dif = 0;
+	vel_ctrl_R.pre = 0;
+	vel_ctrl_R.p_out = 0;
+	vel_ctrl_R.i_out = 0;
+	vel_ctrl_R.dir = 1;
+	vel_ctrl_R.out = 0;
+
+	vel_ctrl_L.real = 0;
+	vel_ctrl_L.dif = 0;
+	vel_ctrl_L.pre = 0;
+	vel_ctrl_L.p_out = 0;
+	vel_ctrl_L.i_out = 0;
+	vel_ctrl_L.dir = 1;
+	vel_ctrl_L.out = 0;
+	
+	/*** omega_ctrl構造体の初期化 ***/
+	omega.target = 0;
+	omega.dif = 0;
+	omega.p_out = 0;
+	omega.i_out = 0;
+	omega.dir = 0;
+	omega.out = 0;
+		
 	//パラメータ設定
 	params_search1.vel_max = 0.50f;						//単位はm/s, mm/ms
 	params_search1.accel = 4.0f;						//単位はm/s/s
@@ -94,43 +119,39 @@ void val_Init(void){
 	params_search1.R90_after = 45;
 	params_search1.L90_before = 35;
 	params_search1.L90_after = 50;
-	
-/*	uart_printf("tim is %lf\r\n", val1);
-	uart_printf("omega is %lf\r\n", val2);
-	uart_printf("omega_accel is %lf\r\n",val3);
-	
-	while(1);
-*/	
-	
+			
 //	params_search1.omega_max = 6.0f;			//単位はrad/s
 //	params_search1.omega_accel = 25.0f;		//単位はrad/s/s
-		
+	
+	/*** 探索用のゲイン構造体設定　***/
 	gain_search1.vel_kpR = 14.0f;		//14.0	
 	gain_search1.vel_kpL = 14.0f;			
 	gain_search1.vel_kiR = 0.05f;		//0.05
 	gain_search1.vel_kiL = 0.05f;
-	gain_search1.omega_kp = 3.0f;	//1.3
-	gain_search1.omega_ki = 0.3f;		//0.11
-	gain_search1.wall_kp = 0.010f;
-	gain_search1.wall_kd = 0.001f;
+	gain_search1.omega_kp = 0.01f;		//1.3
+	gain_search1.omega_ki = 0.0f;		//0.11
+	gain_search1.wall_kp = 0.00f;
+	gain_search1.wall_kd = 0.00f;
 	
 	setting_params(params_search1);
 	setting_gain(gain_search1);
 	
-	//ジャイロ系
-	omega_G = angle_G = 0;
-	dif_pre_omega = 0;
-	dif_omega = 0;
-	kwpG = kwdG = 0;
+	/*** centor 構造体の初期化 ***/
+	centor.vel = 0;
+	centor.vel_target = 0;
+	centor.omega_deg = 0;
+	centor.pre_omega_deg = 0;
+	centor.omega_rad = 0;
+	centor.omega_dir = 0;
+	centor.distance = 0;
+	centor.angle = 0;
+	
+	omega.dif = 0;
+	omega.p_out = omega.i_out = 0;
 	gyro_base = 0;
-	pre_omega_G = 0;
 		
-	/* 回転速度，計算処理 */
-	angle_G = 0;
-	dif_angle = 0;
-	kapG = kadG = 0;
-	apid_G  = 0;
-	dif_pre_angle = 0;
+	/*** omega_ctrl構造体の初期化 ***/
+	centor.angle = 0;
 
 	maxindex_w = val1 / 3;					//回転加速時間計算
 	minindex = 0;						//最低速度初期化
@@ -154,7 +175,7 @@ void val_Init(void){
 	Kxr =  -DIA_WHEEL_mm * (DIA_PINI_mm / DIA_SQUR_mm) * 2 * Pi / 4096;	      //エンコーダ値を物理量に変換するのに必要な定数
 	
 	//---テスト用配列初期化
-	for(i=0;i<2000;i++){
+/*	for(i=0;i<2000;i++){
 		log.test1[i] = 0;
 		log.test2[i] = 0;
 		log.test3[i] = 0;
@@ -162,7 +183,7 @@ void val_Init(void){
 		log.test5[i] = 0;
 		log.test6[i] = 0;
 	}	
-}
+*/}
 
 // タイマ初期化
 void timer_Init(void){

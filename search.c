@@ -104,7 +104,6 @@ void searchA(){												//一次走行　一番基本的な初期装備
 // 戻り値：なし
 //+++++++++++++++++++++++++++++++++++++++++++++++
 void searchSA(){											//連続走行の未完成アルゴリズム、完成させればケッコー早い走行ができる、初期化は直してないからがんばって　標
-	int32_t count = 0;
 
 	//====歩数等初期化====
 	m_step = r_cnt = 0;										//歩数と経路カウンタの初期化
@@ -137,18 +136,11 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				break;
 			//----右折----
 			case 0x44:
-				if(wall_l.dif > wall_l.threshold + WALL_OFF){
-					MF.FLAG.SET = 1;
-				}
 				half_sectionD();
 				turn_R90();
 				Wait;
 				turn_dir(DIR_TURN_R90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET ){
-					set_position(1);
-					MF.FLAG.SET = 0;
-				}
 				half_sectionA();
 				break;
 			//----180回転----
@@ -172,29 +164,19 @@ void searchSA(){											//連続走行の未完成アルゴリズム、完成
 				break;
 			//----左折----
 			case 0x11:
-				if(wall_r.dif > wall_r.threshold + WALL_OFF){
-					MF.FLAG.SET = 1;
-				}
 				half_sectionD();
 				turn_L90();
 				Wait;
 				turn_dir(DIR_TURN_L90);
 				set_dir(FORWARD);
-				if(MF.FLAG.SET){
-					set_position(1);
-					MF.FLAG.SET = 0;
-				}
+				
 				half_sectionA();			
 				break;
 		}
 
 		adv_pos();
 		conf_route_NESW();
-/*		count++;
-		if(count > 8){
-			break;	
-		}
-*/		
+	
 	}while((PRELOC.AXIS.X != goal_x) || (PRELOC.AXIS.Y != goal_y));
 	half_sectionD();
 	ms_wait(2000);

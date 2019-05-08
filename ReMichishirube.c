@@ -26,7 +26,7 @@ int main(void) {
 
 	//====変数宣言====
 	char mode = 0;
-	uint16_t i,j;
+	uint16_t i;
 //	float ttt;
 	//====初期化====
 	R_PG_Clock_Set();					//クロック設定
@@ -44,32 +44,35 @@ int main(void) {
 	//GYRO_OFFSET(1000);
 	
 //	melody(c6h,1000);		
-	set_dir(FORWARD);
-	
+
 /*	start_wait();
 	GYRO_OFFSET(1000);
 */	
 	sensor_start();
-//	start_wait();
+	start_wait();
+	start_ready();
 	
-/*	MF.FLAG.CTRL = 0;
+	MF.FLAG.CTRL = 0;
 	time = time2 = 0;
+	set_dir(FORWARD);
 	driveA(100);
 	driveD(100,1);
-*/
 
-	time = time2 = 0;
-/*	MF.FLAG.CTRL = 0;
+
+/*	time = time2 = 0;
+	MF.FLAG.CTRL = 0;
 	driveA(90 + SET_MM);
 	driveA(180);
 	driveA(180);
 	MF.FLAG.CTRL = 0;
 	driveD(90,1);	
 */
-//	turn_R90();
-//	driveD(0,1);
+/*	set_dir(TURN_R);
+	turn_R90();
+*/	
+
 //	MF.FLAG.CTRL = 1;
-	//ms_wait(10);
+//	ms_wait(10);
 //	auto_Calibration(0.5,0.5);
 //	ms_wait(1000);
 //	driveA(SET_MM + 90);
@@ -117,11 +120,11 @@ int main(void) {
 			
 			uart_printf("base:%d, %d\r\n", wall_l.threshold, wall_r.threshold);
 			//uart_printf("targ\tvelG\tkvpR\tkvpL\t%lf\r\n",offsetA);
-			for(i=0;i<2000;i++){
+/*			for(i=0;i<2000;i++){
 				uart_printf("%lf, %lf,%lf, %lf, %lf, %lf\r\n",log.test1[i],log.test2[i],log.test3[i],log.test4[i],log.test5[i],log.test6[i]);
 				ms_wait(1);
 			}
-			uart_printf("ALL\r\n");
+*/			uart_printf("ALL\r\n");
 			break;
 			
 		case 1:	//----一次探索走行----
@@ -252,12 +255,12 @@ int main(void) {
 			MF.FLAG.WACCL = 0;
 			MF.FLAG.WDECL = 0;
 			
-			targ_vel = 0;
-			targ_omega = 0;
+			centor.vel_target = 0;
+			omega.target = 0;
 			
 			drive_start();
 			while(1){
-				uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n",angle_G, dif_angle, apid_G);
+//				uart_printf("angle : %lf dif_angle : %lf tpid_G : %lf\r\n");
 				ms_wait(100);
 			}
 			break;

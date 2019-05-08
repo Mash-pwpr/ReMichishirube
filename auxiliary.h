@@ -70,7 +70,7 @@
 		volatile gain gain_now;
 		volatile params params_search1;
 		volatile gain gain_search1;
-		volatile data_array log; 
+//		volatile data_array log; 
 	#else											//対応ファイルでEXTERNが定義されていない場合
 		/*グローバル変数の宣言*/
 		extern uint16_t DISP_LEDS[4];
@@ -78,7 +78,7 @@
 		extern volatile gain gain_now;
 		extern volatile params params_search1;
 		extern volatile gain gain_search1;
-		extern volatile data_array log; 
+//		extern volatile data_array log; 
 
 	#endif
 
@@ -106,5 +106,6 @@
 	void setting_gain(gain);
 	
 	void ctrl_zero();
+	void reset_distance();
 
 #endif /* AUXILIARY_H_ */

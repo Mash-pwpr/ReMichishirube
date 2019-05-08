@@ -149,6 +149,7 @@
           <Option>-include=..\..\..\..\Renesas\PDG2_proj\Michishirube\SYSTEM</Option>
           <Option>-output=obj</Option>
           <Option>-debug</Option>
+          <Option>-optimize=1</Option>
           <Option>-nologo</Option>
         </CompileOptions>
         <AssembleOptions>

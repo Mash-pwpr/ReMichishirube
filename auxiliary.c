@@ -102,7 +102,7 @@ void select_mode(char *mode){
 		R_PG_Timer_GetCounterValue_MTU_U0_C1(&encL);
 		R_PG_Timer_GetCounterValue_MTU_U0_C2(&encR);
 		
-		nowR = (uint16_t)(encR / 4400);
+		nowR = (uint16_t)(encR / 4300);
 		nowL = (uint16_t)(encL / 30000);
 		
 		//ms_wait(50);
@@ -111,12 +111,12 @@ void select_mode(char *mode){
 		pins_write(DISP_LEDS, *mode, 4);			//LEDがActiveLowの場合
 		if(nowR - preR != 0){
 			uart_printf(" mode:%2d\r\n", *mode);
-			melody(b7,100);
+			melody(c6 + (60 * *mode),100);
 		}
 	}while(nowL != 1);
 	
 	uart_printf("Finish :  This is mode %2d\r\n", *mode);
-	melody(d6,500);
+	melody(c6 + + (60 * *mode),500);
 	
 	R_PG_Timer_HaltCount_MTU_U0_C1();
 	R_PG_Timer_HaltCount_MTU_U0_C2();
@@ -161,12 +161,6 @@ void start_wait(){
 	R_PG_ADC_12_StartConversionSW_S12AD0();
 	R_PG_ADC_12_GetResult_S12AD0(ad_res);
 	
-/*	ad_r_off = ad_res[3];
-	ad_fr_off = ad_res[4];
-	ad_ff_off = ad_res[2];
-	ad_fl_off = ad_res[0];
-	ad_l_off = ad_res[1]; 
-*/
 	R_PG_Timer_StartCount_CMT_U0_C1();
 	uart_printf("Ready???\r\n");
 	
@@ -180,14 +174,7 @@ void start_wait(){
 			break;
 		}
 	}
-/*	R_PG_Timer_HaltCount_CMT_U0_C1();
-	
-	pin_write(PE0,0);
-	pin_write(PE1,0);
-	pin_write(PE2,0);
-	pin_write(PE3,0);
-	pin_write(PE4,0);
-*/
+
 }
 
 void start_ready(void){
@@ -195,14 +182,14 @@ void start_ready(void){
 	sensor_start();
 	
 	MF.FLAG.CTRL = 0;								//制御を無効にする
-	set_dir(BACK);									//後退するようモータの回転方向を設定
 	get_base();
 	set_dir(FORWARD);								//前進するようにモータの回転方向を設定
 	
-	//GYRO_OFFSET(1000);
+//	GYRO_OFFSET(1000);
 	
 	melody(c6,1000);
 	auto_Calibration(0.30,0.60);
+	time2 = 0;
 	driveA(SET_MM);
 }
 
@@ -235,4 +222,15 @@ void ctrl_zero(){
 	MF.FLAG.CTRL = 0;
 	sen_ctrl = 0;
 	pre_dif_total = 0;
+}
+
+void reset_distance(){
+	/* 物理量初期化 */
+	encoder_r.distance = 0;
+	encoder_l.distance = 0;
+	centor.distance = 0;
+	
+	/* エンコーダカウント値初期化 */
+	encoder_r.sum = 0;
+	encoder_l.sum = 0;
 }

@@ -66,7 +66,6 @@
 		volatile float pre_dif_total;									//壁のPD制御用
 		volatile float sen_ctrl;
 		
-		volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
 		volatile float gyro_base;
 	#else
 		//----発光LEDポート----
@@ -90,7 +89,6 @@
 		extern volatile uint16_t base_l, base_r;
 		extern volatile int16_t dif_l, dif_r;
 		extern volatile float volt_bat;
-		extern volatile float omega_G, angle_G,omega_G_rad,pre_omega_G;
 		
 		extern volatile float cont_r,cont_l;
 		
